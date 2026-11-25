@@ -1,0 +1,44 @@
+[
+  {
+    "ServerName": "루페온",
+    "CharacterName": "은하수바리케이드",
+    "CharacterLevel": 70,
+    "CharacterClassName": "홀리나이트",
+    "ItemAvgLevel": "1,742.50"
+  },
+  {
+    "ServerName": "루페온",
+    "CharacterName": "새벽별빛",
+    "CharacterLevel": 70,
+    "CharacterClassName": "바드",
+    "ItemAvgLevel": "1,720.00"
+  },
+  {
+    "ServerName": "루페온",
+    "CharacterName": "모래시계장인",
+    "CharacterLevel": 70,
+    "CharacterClassName": "소서리스",
+    "ItemAvgLevel": "1,700.83"
+  },
+  {
+    "ServerName": "루페온",
+    "CharacterName": "초록우체통",
+    "CharacterLevel": 70,
+    "CharacterClassName": "기상술사",
+    "ItemAvgLevel": "1,680.00"
+  },
+  {
+    "ServerName": "루페온",
+    "CharacterName": "강철주먹씨",
+    "CharacterLevel": 68,
+    "CharacterClassName": "인파이터",
+    "ItemAvgLevel": "1,640.17"
+  },
+  {
+    "ServerName": "실리안",
+    "CharacterName": "구름빵가게",
+    "CharacterLevel": 60,
+    "CharacterClassName": "아르카나",
+    "ItemAvgLevel": "1,445.00"
+  }
+]

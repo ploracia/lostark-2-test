@@ -1,0 +1,314 @@
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.passive-effect {
+  display: block;
+}
+.card h2 .sub,
+.topbar kbd,
+.portrait small,
+.sib-server {
+  color: var(--text-2);
+}
+.gtext,
+.gpill {
+  color: color-mix(in srgb, var(--g) 47%, var(--text));
+}
+.ap-points div:nth-child(1) b {
+  color: color-mix(in srgb, var(--g-legendary) 47%, var(--text));
+}
+.ap-points div:nth-child(2) b {
+  color: color-mix(in srgb, var(--g-rare) 47%, var(--text));
+}
+.ap-points div:nth-child(3) b {
+  color: color-mix(in srgb, var(--g-uncommon) 47%, var(--text));
+}
+.notice.ok {
+  color: color-mix(in srgb, var(--ok) 47%, var(--text));
+}
+.notice.err {
+  color: color-mix(in srgb, var(--danger) 65%, var(--text));
+}
+.q1,
+.q2,
+.q3,
+.q5 {
+  color: #000;
+}
+.search input:focus-visible,
+.keybox input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.btn,
+.chip,
+.logo {
+  text-decoration: none;
+  color: inherit;
+}
+.btn.danger,
+.danger-text {
+  color: color-mix(in srgb, var(--danger) 65%, var(--text));
+}
+.warning-text {
+  color: color-mix(in srgb, var(--warn) 55%, var(--text));
+}
+.chip.rate-chip {
+  cursor: default;
+}
+.demo-label {
+  margin: 0 0 12px;
+}
+.key-form {
+  display: grid;
+  gap: 16px;
+}
+.key-form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.key-form legend {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.kv dd,
+.key-hero,
+.empty-home {
+  overflow-wrap: anywhere;
+}
+.key-wrap .notice + .steps {
+  margin-top: 10px;
+}
+.empty-home,
+.error-page {
+  max-width: 720px;
+  margin: 36px auto;
+}
+.empty-home h1 {
+  margin: 0 0 18px;
+}
+.empty-home h2 {
+  margin: 20px 0 8px;
+}
+.search-large {
+  max-width: none;
+}
+.cached-error {
+  margin-bottom: 16px;
+  gap: 6px;
+}
+.state h2 {
+  margin: 0;
+}
+.section-empty {
+  margin: 0;
+}
+.accent-pill {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.profile-info {
+  margin: 10px 0 0;
+}
+.profile h1 {
+  overflow-wrap: anywhere;
+}
+.profile-empty {
+  margin-bottom: 16px;
+}
+.profile-empty .btn {
+  margin: 8px 8px 0 0;
+}
+.item-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.portrait .item-image {
+  object-position: top center;
+}
+.ico .tier,
+.ico .lv {
+  background: #24252ad9;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+.item-text,
+.core-name,
+.engr-details {
+  min-width: 0;
+}
+.item-text {
+  flex: 1;
+}
+.eq .name {
+  display: block;
+}
+.engr-details {
+  flex: 1;
+}
+.grid-effects {
+  width: 100%;
+  margin-top: 12px;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+.grid-effects caption {
+  text-align: left;
+  font-weight: 700;
+  padding: 5px 0;
+}
+.grid-effects th,
+.grid-effects td {
+  border-top: 1px solid var(--line);
+  padding: 4px 0;
+  text-align: left;
+}
+.grid-effects td {
+  text-align: right;
+}
+.card-name {
+  position: relative;
+  z-index: 1;
+  overflow-wrap: anywhere;
+  background: #151821a3;
+  border-radius: 4px;
+}
+.tcard {
+  overflow: hidden;
+}
+.gem-mark {
+  display: flex;
+  justify-content: center;
+}
+.gem-skill {
+  display: block;
+}
+.option-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.tooltip summary {
+  cursor: pointer;
+}
+.tooltip summary .name {
+  display: inline;
+  white-space: normal;
+}
+.tooltip-content {
+  margin: 4px 0;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.gem .tooltip {
+  min-width: 0;
+}
+.gem .tooltip summary {
+  list-style: none;
+}
+.gem .tooltip[open] {
+  position: relative;
+  z-index: 2;
+}
+.gem .tooltip-content {
+  position: absolute;
+  top: 100%;
+  width: max-content;
+  max-width: min(184px, 51vw);
+}
+.gem:nth-child(even) .tooltip-content {
+  right: 0;
+}
+.source-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.drawer {
+  margin: 0;
+  width: min(380px, 100%);
+  height: 100%;
+  max-height: none;
+  max-width: none;
+  color: var(--text);
+  border: 0;
+  border-left: 1px solid var(--line);
+}
+.drawer::backdrop {
+  background: rgb(0 0 0 / 0.38);
+}
+.drawer-heading {
+  justify-content: space-between;
+}
+.drawer-heading h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.sib {
+  width: 100%;
+  background: transparent;
+  text-align: left;
+}
+.sib small {
+  display: block;
+}
+.skeleton-hero {
+  height: 233px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: minmax(72px, 180px) 1fr;
+  gap: 20px;
+}
+.skeleton-card .skel {
+  height: 220px;
+}
+progress.meter {
+  appearance: none;
+  border: 0;
+  color: var(--warn);
+}
+progress.meter::-webkit-progress-bar {
+  background: var(--surface-2);
+}
+progress.meter::-webkit-progress-value {
+  background: var(--warn);
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    gap: 8px;
+  }
+  .topbar .chip {
+    padding-inline: 7px;
+  }
+  .pside {
+    grid-auto-flow: initial;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .card h2 {
+    flex-wrap: wrap;
+  }
+  .drawer {
+    width: 100%;
+  }
+  .skeleton-hero {
+    grid-template-columns: 96px 1fr;
+    height: 200px;
+  }
+}
