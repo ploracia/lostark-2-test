@@ -1,0 +1,50 @@
+{
+  "_source": {
+    "note": "가상 데이터입니다. 실제 캐릭터 응답이 아니며, 공식 Swagger의 ArkPassive 스키마와 공개 샘플(artbiit/lostark-api-service, ISC)의 필드 형식만 따랐습니다. 노드 이름과 수치는 예시입니다.",
+    "apiVersion": "V9.0.0 형식"
+  },
+  "ArkPassive": {
+    "Title": "예시 각인",
+    "IsArkPassive": true,
+    "Points": [
+      {
+        "Name": "진화",
+        "Value": 120,
+        "Tooltip": "<img src='emoticon_ark_evolution' width='25' height='28' vspace='-8'></img><FONT COLOR='#ffd200'> 진화 아크 패시브 포인트</font><br>예시 설명",
+        "Description": "6랭크 30레벨"
+      },
+      {
+        "Name": "깨달음",
+        "Value": 101,
+        "Tooltip": "<img src='emoticon_ark_realization' width='25' height='28' vspace='-8'></img><FONT COLOR='#a2ccf6'> 깨달음 아크 패시브 포인트</font><br>예시 설명",
+        "Description": "6랭크 30레벨"
+      },
+      {
+        "Name": "도약",
+        "Value": 70,
+        "Tooltip": "<img src='emoticon_ark_leap' width='25' height='28' vspace='-8'></img><FONT COLOR='#d4ff88'> 도약 아크 패시브 포인트</font><br>예시 설명",
+        "Description": "5랭크 20레벨"
+      }
+    ],
+    "Effects": [
+      {
+        "Name": "깨달음",
+        "Description": "<FONT color='#83E9FF'>깨달음</FONT> 1티어 <FONT color='#83E9FF'>예시 각인 Lv.1</FONT>",
+        "Icon": "https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_ifm/ark_passive_ifm_4.png",
+        "ToolTip": "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"예시 각인\"},\"Element_001\":{\"type\":\"CommonSkillTitle\",\"value\":{\"leftText\":\"아크 패시브 레벨 <FONT COLOR='#FFD200'>1</FONT>\",\"level\":\"\",\"name\":\"<FONT SIZE='13' COLOR='#FFFFAC'>깨달음</FONT>\",\"slotData\":{\"iconGrade\":0,\"iconPath\":\"https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_ifm/ark_passive_ifm_4.png\"}}},\"Element_002\":{\"type\":\"MultiTextBox\",\"value\":\"예시 깨달음 효과 설명||<BR>\"}}"
+      },
+      {
+        "Name": "진화",
+        "Description": "<FONT color='#F1D594'>진화</FONT> 1티어 <FONT color='#F1D594'>치명 Lv.30</FONT>",
+        "Icon": "https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_evolution/ark_passive_evolution_1.png",
+        "ToolTip": "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"치명\"},\"Element_001\":{\"type\":\"CommonSkillTitle\",\"value\":{\"leftText\":\"아크 패시브 레벨 <FONT COLOR='#FFD200'>30</FONT>\",\"level\":\"\",\"name\":\"<FONT SIZE='13' COLOR='#FFFFAC'>진화</FONT>\",\"slotData\":{\"iconGrade\":0,\"iconPath\":\"https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_evolution/ark_passive_evolution_1.png\"}}},\"Element_002\":{\"type\":\"MultiTextBox\",\"value\":\"치명이 <FONT COLOR='#99ff99'>1500</FONT> 증가한다.||<BR>\"}}"
+      },
+      {
+        "Name": "도약",
+        "Description": "<FONT color='#C2EA55'>도약</FONT> 2티어 <FONT color='#C2EA55'>예시 도약 노드 Lv.3</FONT>",
+        "Icon": "https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_ifm/ark_passive_ifm_14.png",
+        "ToolTip": "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"예시 도약 노드\"},\"Element_001\":{\"type\":\"CommonSkillTitle\",\"value\":{\"leftText\":\"아크 패시브 레벨 <FONT COLOR='#FFD200'>3</FONT>\",\"level\":\"\",\"name\":\"<FONT SIZE='13' COLOR='#FFFFAC'>도약</FONT>\",\"slotData\":{\"iconGrade\":0,\"iconPath\":\"https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_ifm/ark_passive_ifm_14.png\"}}},\"Element_002\":{\"type\":\"MultiTextBox\",\"value\":\"예시 도약 효과 설명||<BR>\"}}"
+      }
+    ]
+  }
+}

@@ -3,3 +3,6 @@ dist/
 .env*
 *.log
 .wrangler/
+
+# Third-party screenshots kept locally only
+research/transfer/images/
