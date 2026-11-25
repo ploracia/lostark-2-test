@@ -1,0 +1,1104 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`이관 엔진 통합 > 픽스처 1,742.50 → 1,788.75 1`] = `
+{
+  "accessories": [
+    {
+      "accessory": {
+        "grade": "고대",
+        "index": 1,
+        "options": [
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "상",
+            "text": "추가 피해 +2.60%",
+          },
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "중",
+            "text": "적에게 주는 피해 +1.20%",
+          },
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "하",
+            "text": "공격력 +80",
+          },
+        ],
+        "part": "목걸이",
+        "quality": 82,
+        "tier": 4,
+        "tradeCount": null,
+      },
+      "evidence": {
+        "level": "official",
+        "source": "공지 표5·6",
+      },
+      "outcome": "scroll",
+      "reason": "딜러 기준 1·2옵션 상/중 → 4등급",
+      "scrollGrade": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표5·6",
+        },
+        "kind": "value",
+        "value": 4,
+      },
+      "tradeCount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표5·6",
+        },
+        "kind": "none",
+        "label": "횟수 확인 필요",
+      },
+    },
+    {
+      "accessory": {
+        "grade": "고대",
+        "index": 1,
+        "options": [
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "상",
+            "text": "무기 공격력 +3.00%",
+          },
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "중",
+            "text": "공격력 +0.95%",
+          },
+        ],
+        "part": "귀걸이",
+        "quality": 67,
+        "tier": 4,
+        "tradeCount": null,
+      },
+      "evidence": {
+        "level": "official",
+        "source": "공지 표5·6",
+      },
+      "outcome": "scroll",
+      "reason": "딜러 기준 1·2옵션 상/중 → 4등급",
+      "scrollGrade": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표5·6",
+        },
+        "kind": "value",
+        "value": 4,
+      },
+      "tradeCount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표5·6",
+        },
+        "kind": "none",
+        "label": "횟수 확인 필요",
+      },
+    },
+    {
+      "accessory": {
+        "grade": "유물",
+        "index": 2,
+        "options": [
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "중",
+            "text": "무기 공격력 +1.80%",
+          },
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "하",
+            "text": "최대 생명력 +3250",
+          },
+        ],
+        "part": "귀걸이",
+        "quality": 45,
+        "tier": 4,
+        "tradeCount": null,
+      },
+      "evidence": {
+        "level": "official",
+        "source": "공지 표5·6",
+      },
+      "outcome": "shard",
+      "reason": "품질 67 미만",
+      "scrollGrade": null,
+      "tradeCount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표5·6",
+        },
+        "kind": "none",
+        "label": "횟수 확인 필요",
+      },
+    },
+    {
+      "accessory": {
+        "grade": "고대",
+        "index": 1,
+        "options": [
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "상",
+            "text": "치명타 적중률 +1.55%",
+          },
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "중",
+            "text": "치명타 피해 +2.40%",
+          },
+        ],
+        "part": "반지",
+        "quality": 93,
+        "tier": 4,
+        "tradeCount": null,
+      },
+      "evidence": {
+        "level": "official",
+        "source": "공지 표5·6",
+      },
+      "outcome": "scroll",
+      "reason": "딜러 기준 1·2옵션 상/중 → 4등급",
+      "scrollGrade": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표5·6",
+        },
+        "kind": "value",
+        "value": 4,
+      },
+      "tradeCount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표5·6",
+        },
+        "kind": "none",
+        "label": "횟수 확인 필요",
+      },
+    },
+    {
+      "accessory": {
+        "grade": "고대",
+        "index": 2,
+        "options": [
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "상",
+            "text": "치명타 피해 +4.00%",
+          },
+          {
+            "colors": [],
+            "kind": undefined,
+            "rank": "하",
+            "text": "아군 공격력 강화 +1.35%",
+          },
+        ],
+        "part": "반지",
+        "quality": 58,
+        "tier": 4,
+        "tradeCount": null,
+      },
+      "evidence": {
+        "level": "official",
+        "source": "공지 표5·6",
+      },
+      "outcome": "shard",
+      "reason": "품질 67 미만",
+      "scrollGrade": null,
+      "tradeCount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표5·6",
+        },
+        "kind": "none",
+        "label": "횟수 확인 필요",
+      },
+    },
+  ],
+  "after": {
+    "avg16": {
+      "evidence": {
+        "level": "official",
+        "source": "공지 표1",
+      },
+      "kind": "value",
+      "value": 1788.75,
+    },
+  },
+  "assumptions": [
+    {
+      "field": "gearItemLevel",
+      "id": "gearItemLevel",
+      "text": "입력하지 않은 부위는 장착 장비가 최고 아이템 레벨이라고 가정합니다.",
+    },
+    {
+      "field": "storedEsther",
+      "id": "storedEsther",
+      "text": "보관 중인 에스더 무기가 없다고 가정합니다.",
+    },
+    {
+      "field": "vambraceHoning",
+      "id": "vambraceHoning",
+      "text": "완갑 재련 단계는 확인 필요로 표시합니다.",
+    },
+    {
+      "field": "artisanEnergy",
+      "id": "artisanEnergy",
+      "text": "입력하지 않은 장인의 기운은 기존 수치가 유지된다고 표시합니다.",
+    },
+    {
+      "field": "gemSource",
+      "id": "gemSource",
+      "text": "획득처를 입력하지 않은 8레벨 보석은 일반 획득으로 가정합니다.",
+    },
+    {
+      "field": "stoneCut",
+      "id": "stoneCut",
+      "text": "장착 스톤은 세공 완료로 가정합니다.",
+    },
+    {
+      "id": "bracelet",
+      "text": "미장착 팔찌가 더 좋으면 그 팔찌가 기준이 됩니다.",
+    },
+  ],
+  "bracelet": {
+    "eligible": {
+      "evidence": {
+        "level": "official",
+        "source": "공지 표7·8",
+      },
+      "kind": "value",
+      "value": true,
+    },
+    "scrollGrade": {
+      "evidence": {
+        "level": "unknown",
+        "note": "배점 및 등급 컷 미공개",
+        "source": "공지 표7·8",
+      },
+      "kind": "none",
+      "label": "1~21등급 중 계산 불가",
+    },
+    "status": "eligible",
+    "support": true,
+    "tiers": [
+      {
+        "dealer": undefined,
+        "support": undefined,
+        "text": "타대 스킬 피해 +3.5%",
+      },
+      {
+        "dealer": "2티어+",
+        "support": undefined,
+        "text": "치명 +84",
+      },
+      {
+        "dealer": "2티어+",
+        "support": "2티어",
+        "text": "특화 +101",
+      },
+    ],
+  },
+  "counts": {
+    "estimated": 1,
+    "official": 41,
+    "unknown": 7,
+  },
+  "current": {
+    "equippedAvg": 1776.6666666666667,
+    "profileAvg": 1742.5,
+  },
+  "esther": null,
+  "gems": [
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 10,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "겁화",
+        "level": 10,
+        "slot": 0,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 10,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "겁화",
+        "level": 10,
+        "slot": 1,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 9,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "겁화",
+        "level": 9,
+        "slot": 2,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 9,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "겁화",
+        "level": 9,
+        "slot": 3,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 8,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "겁화",
+        "level": 8,
+        "slot": 4,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 10,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "작열",
+        "level": 10,
+        "slot": 5,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 9,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "작열",
+        "level": 9,
+        "slot": 6,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 9,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "작열",
+        "level": 9,
+        "slot": 7,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 8,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "작열",
+        "level": 8,
+        "slot": 8,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 8,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "작열",
+        "level": 8,
+        "slot": 9,
+      },
+      "choiceBox": null,
+    },
+    {
+      "after": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표10",
+        },
+        "kind": "value",
+        "value": {
+          "bound": null,
+          "level": 7,
+        },
+      },
+      "before": {
+        "bound": null,
+        "kind": "작열",
+        "level": 7,
+        "slot": 10,
+      },
+      "choiceBox": null,
+    },
+  ],
+  "payouts": [
+    {
+      "amount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 품질 개편",
+        },
+        "kind": "none",
+        "label": "수량 미확인",
+      },
+      "basis": "부위별 최고 품질 기준. 무기 100 · 투구 96 · 상의 88 · 하의 91 · 장갑 74 · 견갑 100",
+      "item": "2부 성장 재료 교환용 토큰 · 품질",
+    },
+    {
+      "amount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 카르마 환급",
+        },
+        "kind": "none",
+        "label": "수량 미확인",
+      },
+      "basis": "22레벨 이상 대상 추정 · 진화 25",
+      "item": "2부 성장 재료 교환용 토큰 · 카르마",
+    },
+    {
+      "amount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표5·6",
+        },
+        "kind": "none",
+        "label": "수량 미확인",
+      },
+      "basis": "비대상 장신구 2개",
+      "item": "영롱한 보석 파편",
+    },
+    {
+      "amount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 상급 재련 제거",
+        },
+        "kind": "none",
+        "label": "보상 언급 없음",
+      },
+      "basis": "투구 20단계",
+      "item": "상급 재련 제거",
+    },
+    {
+      "amount": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 교체 지급",
+        },
+        "kind": "none",
+        "label": "수량 미확인",
+      },
+      "basis": "재련 재료 · 팔찌 재변환권 · 여분 스톤 · 비상의 돌 키트 · 큐브 입장권",
+      "item": "보관함 아이템",
+    },
+  ],
+  "rulesVersion": "2026-11-25 (공지 13608)",
+  "slots": [
+    {
+      "artisanEnergy": undefined,
+      "from": "투구",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "투구",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 20,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "투구",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "목걸이",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "견갑",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "견갑",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 20,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "견갑",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "귀걸이1",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "상의",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "상의",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 20,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "상의",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "귀걸이2",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "하의",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "하의",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 20,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "하의",
+      "grade": "유물",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1785,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 2,
+      },
+      "slot": "반지1",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "장갑",
+      "grade": "전설",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1770,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 4,
+      },
+      "slot": "장갑",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 19,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "장갑",
+      "grade": "전설",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1770,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 4,
+      },
+      "slot": "반지2",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "무기",
+      "grade": "고대",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1800,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "slot": "무기",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 23,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "무기",
+      "grade": "고대",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1800,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "slot": "완갑",
+      "slotHoning": {
+        "evidence": {
+          "level": "unknown",
+          "note": undefined,
+          "source": "공지 표1",
+        },
+        "kind": "none",
+        "label": "재련 단계 확인 필요",
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "무기",
+      "grade": "고대",
+      "isNew": true,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1800,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "slot": "허리띠",
+      "slotHoning": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1 · 재련 유지",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "무기",
+      "grade": "고대",
+      "isNew": true,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1800,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "slot": "성물",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "무기",
+      "grade": "고대",
+      "isNew": true,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1800,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "slot": "인장",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+    {
+      "artisanEnergy": undefined,
+      "from": "무기",
+      "grade": "고대",
+      "isNew": false,
+      "itemLevel": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 1800,
+      },
+      "polish": {
+        "evidence": {
+          "level": "official",
+          "source": "공지 표1",
+        },
+        "kind": "value",
+        "value": 0,
+      },
+      "slot": "팔찌",
+      "slotHoning": undefined,
+      "tier": 4,
+    },
+  ],
+  "stone": {
+    "excluded": false,
+    "names": [
+      "원한",
+      "아드레날린",
+    ],
+    "points": [
+      3,
+      2,
+    ],
+    "sum": 5,
+    "upgrade": {
+      "evidence": {
+        "level": "estimated",
+        "note": "스톤 Lv 해석 미검증",
+        "source": "공지 표9",
+      },
+      "kind": "value",
+      "value": {
+        "extra": false,
+        "level": 7,
+        "slots": 2,
+      },
+    },
+    "validPair": "dealer",
+  },
+}
+`;

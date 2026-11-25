@@ -212,7 +212,9 @@ function App() {
   const location = useLocation();
   const { key, demo, recent } = useSession();
   const [favorites, setFavorites] = useNames("favorites");
-  const match = location.pathname.match(/^\/c\/([^/]+)\/?$/);
+  const match = location.pathname.match(/^\/c\/([^/]+)(?:\/(transfer))?\/?$/);
+  const unknownCharacterTab =
+    !match && location.pathname.match(/^\/c\/([^/]+)\//);
   let name = match?.[1] ?? "";
   try {
     name = decodeURIComponent(name);
@@ -228,6 +230,17 @@ function App() {
         state={{ returnTo: createPath(location) }}
       />
     );
+  if (unknownCharacterTab) {
+    return (
+      <Navigate
+        to={{
+          pathname: "/c/" + unknownCharacterTab[1],
+          search: location.search,
+        }}
+        replace
+      />
+    );
+  }
   return (
     <>
       <TopBar name={name} />
@@ -244,6 +257,7 @@ function App() {
           <Character
             key={name}
             name={name}
+            tab={match?.[2] === "transfer" ? "transfer" : "current"}
             recent={recent.map((entry) => entry.name)}
             favorite={favorites.includes(name)}
             toggleFavorite={() =>

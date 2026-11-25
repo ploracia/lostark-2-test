@@ -62,7 +62,7 @@ function go(path = hash, withKey = true) {
       savedAt: new Date().toISOString(),
       status: "ok",
     });
-  history.replaceState(null, "", "/" + path);
+  history.replaceState(null, "", path.startsWith("/") ? path : "/" + path);
   return render(<ArkLens />);
 }
 
@@ -260,6 +260,99 @@ describe("first visit onboarding", () => {
 });
 
 describe("character views with MSW", () => {
+  it.each([hash, hash.slice(1)])(
+    "switches character tabs without requesting or recording again from %s",
+    async (route) => {
+      const armoryRequest = vi.fn(() => HttpResponse.json(armory));
+      const writes = vi.spyOn(Storage.prototype, "setItem");
+      try {
+        server.use(http.get(endpoint, armoryRequest));
+        go(route);
+        const current = await screen.findByRole("tab", { name: "현재" });
+        const tabs = within(
+          screen.getByRole("tablist", { name: "캐릭터 보기" }),
+        );
+        current.focus();
+        fireEvent.keyDown(current, { key: "ArrowRight" });
+        expect(await screen.findByText("1,788.75")).toBeTruthy();
+        expect(screen.getByText("1~21등급 중 계산 불가")).toBeTruthy();
+        expect(tabs.getByRole("tab", { selected: true }).textContent).toContain(
+          "이관",
+        );
+        expect(document.activeElement).toBe(
+          tabs.getByRole("tab", { selected: true }),
+        );
+        const path = () => location.pathname + location.hash;
+        expect(path()).toMatch(/\/transfer$/);
+        await act(async () => history.back());
+        await waitFor(() =>
+          expect(tabs.getByRole("tab", { selected: true }).textContent).toBe(
+            "현재",
+          ),
+        );
+        for (let i = 0; i < 10; i++) {
+          fireEvent.click(screen.getByRole("tab", { name: /이관/ }));
+          fireEvent.click(screen.getByRole("tab", { name: "현재" }));
+        }
+        expect(armoryRequest).toHaveBeenCalledTimes(1);
+        expect(
+          writes.mock.calls.filter(([key]) => key === RECENT),
+        ).toHaveLength(1);
+      } finally {
+        writes.mockRestore();
+      }
+    },
+  );
+
+  it.each([hash, hash.slice(1)])(
+    "loads the transfer deep link and redirects unknown tabs from %s",
+    async (route) => {
+      const armoryRequest = vi.fn(() => HttpResponse.json(armory));
+      server.use(http.get(endpoint, armoryRequest));
+      go(route + "/transfer");
+      expect(await screen.findByText("1,788.75")).toBeTruthy();
+      expect(armoryRequest).toHaveBeenCalledTimes(1);
+      cleanup();
+      go(route + "/unknown");
+      expect(
+        (await screen.findByRole("tab", { selected: true, name: "현재" }))
+          .textContent,
+      ).toBe("현재");
+      expect(location.pathname + location.hash).not.toContain("/unknown");
+    },
+  );
+
+  it("focuses, validates, saves and clears transfer overrides locally", async () => {
+    const armoryRequest = vi.fn(() => HttpResponse.json(armory));
+    server.use(http.get(endpoint, armoryRequest));
+    go(hash + "/transfer");
+    await screen.findByText("1,788.75");
+    const assumption = screen.getByText(/완갑 재련 단계는 확인 필요로 표시/);
+    const edit = within(assumption).getByRole("button", { name: "바꾸기" });
+    const field = screen.getByLabelText(
+      "기존 완갑 재련 단계",
+    ) as HTMLInputElement;
+    const details = field.closest("details");
+    expect(details?.open).toBe(false);
+    fireEvent.click(edit);
+    expect(details?.open).toBe(true);
+    expect(document.activeElement).toBe(field);
+    fireEvent.change(field, { target: { value: "26" } });
+    expect(field.getAttribute("aria-invalid")).toBe("true");
+    expect(localStorage.getItem("mokokoloa.transfer.v1")).toBeNull();
+    fireEvent.change(field, { target: { value: "12" } });
+    expect(screen.getAllByText("재련 +12")).toHaveLength(2);
+    fireEvent.click(screen.getByRole("tab", { name: "현재" }));
+    fireEvent.click(screen.getByRole("tab", { name: /이관/ }));
+    expect(screen.getAllByText("재련 +12")).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button", { name: "모두 지우기" }));
+    expect(screen.queryByText("재련 +12")).toBeNull();
+    expect(
+      JSON.parse(localStorage.getItem("mokokoloa.transfer.v1") ?? "null"),
+    ).toEqual({});
+    expect(armoryRequest).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     [401, "API 키가 거부되었습니다"],
     [404, "캐릭터를 찾을 수 없습니다"],

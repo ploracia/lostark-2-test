@@ -16,9 +16,18 @@ import {
 } from "./sections";
 import { TTL, useArmory, useSession, useSiblings } from "./session";
 import { Drawer, Skeleton, useClock } from "./ui";
+import { TransferTab } from "./TransferTab";
+import {
+  NOTICE_URL as TRANSFER_NOTICE,
+  NOTICE_DATE,
+} from "./transfer/rules/meta";
 
-export const characterUrl = (name: string) =>
-  "/c/" + encodeURIComponent(name.trim());
+type CharacterTab = "current" | "transfer";
+const characterTabs = ["current", "transfer"] as const;
+export const characterUrl = (name: string, tab?: CharacterTab) =>
+  "/c/" +
+  encodeURIComponent(name.trim()) +
+  (tab === "transfer" ? "/transfer" : "");
 const NOTICE_URL = "https://lostark.game.onstove.com/News/Notice/List";
 export const errorContent = {
   "no-key": [
@@ -270,18 +279,20 @@ function SiblingsDrawer({
 
 export default function Character({
   name,
+  tab,
   recent,
   favorite,
   toggleFavorite,
 }: {
   name: string;
+  tab: CharacterTab;
   recent: string[];
   favorite: boolean;
   toggleFavorite: () => void;
 }) {
   const { key, recordRecent } = useSession();
   const location = useLocation();
-  const recorded = useRef<string>();
+  const recorded = useRef(new Set<string>());
   const now = useClock();
   const [drawer, setDrawer] = useState(false);
   const [cancelled, setCancelled] = useState(false);
@@ -308,17 +319,18 @@ export default function Character({
     if (
       !lookupSucceeded ||
       !profile?.CharacterName ||
-      recorded.current === location.key
+      location.state?.tabSwitch ||
+      recorded.current.has(location.key)
     )
       return;
-    recorded.current = location.key;
+    recorded.current.add(location.key);
     recordRecent({
       name: profile.CharacterName,
       server: profile.ServerName,
       job: profile.CharacterClassName,
       level: profile.ItemAvgLevel,
     });
-  }, [lookupSucceeded, location.key, profile, recordRecent]);
+  }, [lookupSucceeded, location.key, location.state, profile, recordRecent]);
 
   useEffect(() => {
     if (reset === null || cancelled || automatic.current || isFetching) return;
@@ -366,6 +378,45 @@ export default function Character({
     void refetch({ cancelRefetch: true });
   }
 
+  const footer = (
+    <footer className="card source-footer small muted">
+      <div>
+        {tab === "transfer" && (
+          <>
+            공식 공지 기반 예상치이며 실제 결과와 다를 수 있습니다 ·{" "}
+            <a href={TRANSFER_NOTICE} target="_blank" rel="noopener noreferrer">
+              공지 13608 ↗
+            </a>
+            {" · "}
+            규칙 버전 {NOTICE_DATE} ·{" "}
+          </>
+        )}
+        <a href={PORTAL} target="_blank" rel="noopener noreferrer">
+          Lost Ark Open API
+        </a>
+        {" · "}
+        조회 {new Date(query.dataUpdatedAt).toLocaleTimeString("ko-KR")} · 캐시{" "}
+        {remaining}초
+      </div>
+      <button
+        className="btn"
+        disabled={
+          refreshRemaining > 0 ||
+          isFetching ||
+          error?.kind === "maintenance" ||
+          (reset !== null && reset > now)
+        }
+        onClick={refresh}
+      >
+        {isFetching
+          ? "갱신 중…"
+          : refreshRemaining > 0
+            ? "새로고침 (" + refreshRemaining + "초)"
+            : "새로고침"}
+      </button>
+    </footer>
+  );
+
   return (
     <>
       {error && (
@@ -410,50 +461,108 @@ export default function Character({
               </>
             }
           />
-          <div className="grid">
-            <div className="col">
-              <PassiveCard data={data.ArkPassive} />
-              <GridCard data={data.ArkGrid} />
-              <EngravingCard data={data.ArmoryEngraving} />
-              <CardSet data={data.ArmoryCard} />
+          <nav
+            className="view-tabs"
+            role="tablist"
+            aria-label="캐릭터 보기"
+            onKeyDown={(event) => {
+              if (
+                !["ArrowLeft", "ArrowRight", "Home", "End", " "].includes(
+                  event.key,
+                )
+              )
+                return;
+              event.preventDefault();
+              const next =
+                event.key === "Home"
+                  ? "current"
+                  : event.key === "End"
+                    ? "transfer"
+                    : event.key === " "
+                      ? (event.target as HTMLElement).id.replace(
+                          "character-tab-",
+                          "",
+                        )
+                      : tab === "current"
+                        ? "transfer"
+                        : "current";
+              const link = event.currentTarget.querySelector<HTMLAnchorElement>(
+                "#character-tab-" + next,
+              );
+              link?.focus();
+              link?.click();
+            }}
+          >
+            {characterTabs.map((view) => (
+              <Link
+                key={view}
+                id={"character-tab-" + view}
+                role="tab"
+                aria-selected={tab === view}
+                aria-controls={"character-panel-" + view}
+                aria-current={tab === view ? "page" : undefined}
+                tabIndex={tab === view ? 0 : -1}
+                to={{
+                  pathname: characterUrl(name, view),
+                  search: location.search,
+                }}
+                state={{ tabSwitch: true }}
+                onClick={(event) => {
+                  if (
+                    tab === view &&
+                    !event.metaKey &&
+                    !event.ctrlKey &&
+                    !event.shiftKey &&
+                    !event.altKey
+                  )
+                    event.preventDefault();
+                }}
+              >
+                {view === "current" ? (
+                  "현재"
+                ) : (
+                  <>
+                    이관 <span className="pill new-pill">2부</span>
+                  </>
+                )}
+              </Link>
+            ))}
+          </nav>
+          {characterTabs.map((view) => (
+            <div
+              key={view}
+              id={"character-panel-" + view}
+              role="tabpanel"
+              aria-labelledby={"character-tab-" + view}
+              hidden={tab !== view}
+              tabIndex={0}
+            >
+              {tab === view &&
+                (view === "transfer" ? (
+                  <TransferTab data={data} name={name} footer={footer} />
+                ) : (
+                  <div className="grid">
+                    <div className="col">
+                      <PassiveCard data={data.ArkPassive} />
+                      <GridCard data={data.ArkGrid} />
+                      <EngravingCard data={data.ArmoryEngraving} />
+                      <CardSet data={data.ArmoryCard} />
+                    </div>
+                    <div className="col">
+                      <GemStrip data={data.ArmoryGem} />
+                      <div className="two">
+                        <EquipmentCard
+                          equipment={data.ArmoryEquipment}
+                          avatars={data.ArmoryAvatars}
+                        />
+                        <AccessoryCard equipment={data.ArmoryEquipment} />
+                      </div>
+                      {footer}
+                    </div>
+                  </div>
+                ))}
             </div>
-            <div className="col">
-              <GemStrip data={data.ArmoryGem} />
-              <div className="two">
-                <EquipmentCard
-                  equipment={data.ArmoryEquipment}
-                  avatars={data.ArmoryAvatars}
-                />
-                <AccessoryCard equipment={data.ArmoryEquipment} />
-              </div>
-              <footer className="card source-footer small muted">
-                <div>
-                  <a href={PORTAL} target="_blank" rel="noopener noreferrer">
-                    Lost Ark Open API
-                  </a>{" "}
-                  · 조회{" "}
-                  {new Date(query.dataUpdatedAt).toLocaleTimeString("ko-KR")} ·
-                  캐시 {remaining}초
-                </div>
-                <button
-                  className="btn"
-                  disabled={
-                    refreshRemaining > 0 ||
-                    isFetching ||
-                    error?.kind === "maintenance" ||
-                    (reset !== null && reset > now)
-                  }
-                  onClick={refresh}
-                >
-                  {isFetching
-                    ? "갱신 중…"
-                    : refreshRemaining > 0
-                      ? "새로고침 (" + refreshRemaining + "초)"
-                      : "새로고침"}
-                </button>
-              </footer>
-            </div>
-          </div>
+          ))}
         </>
       )}
       {drawer && (
@@ -461,7 +570,9 @@ export default function Character({
           name={name}
           returnFocus={drawerTrigger.current}
           close={() => setDrawer(false)}
-          select={(next) => nav(characterUrl(next))}
+          select={(next) =>
+            nav({ pathname: characterUrl(next, tab), search: location.search })
+          }
         />
       )}
     </>
