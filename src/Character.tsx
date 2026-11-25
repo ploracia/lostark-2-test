@@ -214,8 +214,12 @@ function SiblingsDrawer({
       {query.isPending && query.fetchStatus === "fetching" && (
         <p role="status">원정대 캐릭터를 불러오는 중…</p>
       )}
-      {query.error && <p role="alert">{errorContent[query.error.kind][1]}</p>}
-      {query.data?.length === 0 && (
+      {/* Deleted or long-inactive characters return null/404 for siblings
+          (guide §5.1); show that as an empty roster, not an error. */}
+      {query.error && query.error.kind !== "not-found" && (
+        <p role="alert">{errorContent[query.error.kind][1]}</p>
+      )}
+      {(query.data?.length === 0 || query.error?.kind === "not-found") && (
         <p className="muted">표시할 원정대 캐릭터가 없습니다.</p>
       )}
       {[...groups].map(([server, members]) => (

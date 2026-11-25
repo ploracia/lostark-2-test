@@ -220,18 +220,19 @@ button:disabled {
 .gem .tooltip summary {
   list-style: none;
 }
-.gem .tooltip[open] {
+/* The gem grid is auto-fill (5–11 columns), so per-column alignment cannot
+   keep edge popovers on screen. Anchor the popover to the grid width instead;
+   with no top set it stays just below the opened gem. */
+.gems {
   position: relative;
-  z-index: 2;
 }
 .gem .tooltip-content {
   position: absolute;
-  top: 100%;
-  width: max-content;
-  max-width: min(184px, 51vw);
-}
-.gem:nth-child(even) .tooltip-content {
+  left: 0;
   right: 0;
+  z-index: 2;
+  text-align: left;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
 }
 .source-footer {
   display: flex;

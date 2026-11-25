@@ -21,14 +21,18 @@ export type ParsedTooltip = {
 };
 
 export function plainText(value: string) {
-  return value
-    .replace(/<\s*(?:br\s*\/?|\/p|\/div)\s*>/gi, "\n")
-    .replace(/<[^>]*>/g, "")
-    .replace(/&nbsp;|&#160;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">");
+  return (
+    value
+      .replace(/<\s*(?:br\s*\/?|\/p|\/div)\s*>/gi, "\n")
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;/gi, "'")
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      // Decode &amp; last so "&amp;lt;" stays the literal text "&lt;".
+      .replace(/&amp;/gi, "&")
+  );
 }
 
 const accessoryEffect =

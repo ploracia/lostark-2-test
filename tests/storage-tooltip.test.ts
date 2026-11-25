@@ -5,6 +5,7 @@ import {
   armorOrder,
   gemKind,
   parseTooltip,
+  plainText,
 } from "../src/parse/tooltip";
 import {
   deleteKey,
@@ -165,5 +166,109 @@ describe("rate gate", () => {
     gate.block(5000);
     expect(gate.take(3000)).toBe(5000);
     expect(gate.take(5000)).toBeNull();
+  });
+});
+
+describe("tooltip parser against guide §4 structures", () => {
+  it("reads quality, level, tier and advanced honing by block type, not by index", () => {
+    const raw = JSON.stringify({
+      Element_000: {
+        type: "NameTagBox",
+        value:
+          "<P ALIGN='CENTER'><FONT COLOR='#E3C7A1'>+25 신념의 업화 머리장식</FONT></P>",
+      },
+      // Index shifted on purpose: ItemTitle is not at Element_001.
+      Element_007: {
+        type: "ItemTitle",
+        value: {
+          qualityValue: 97,
+          leftStr0:
+            "<FONT SIZE='12'><FONT COLOR='#E3C7A1'>고대 투구</FONT></FONT>",
+          leftStr2: "<FONT SIZE='14'>아이템 레벨 1755 (티어 4)</FONT>",
+        },
+      },
+      Element_011: {
+        type: "SingleTextBox",
+        value:
+          "<FONT SIZE='12'><FONT COLOR='#FFD200'>[상급 재련]</FONT> 40단계</FONT>",
+      },
+    });
+    expect(parseTooltip(raw)).toMatchObject({
+      quality: 97,
+      itemLevel: "1755",
+      tier: 4,
+      advanced: 40,
+    });
+  });
+
+  it("hides quality when the item has none (qualityValue -1)", () => {
+    const raw = JSON.stringify({
+      Element_001: {
+        type: "ItemTitle",
+        value: { qualityValue: -1, leftStr2: "아이템 티어 4" },
+      },
+    });
+    expect(parseTooltip(raw)?.quality).toBeNull();
+  });
+
+  it("reads ability stone engravings with debuff colour and level bonus", () => {
+    const raw = JSON.stringify({
+      Element_006: {
+        type: "IndentStringGroup",
+        value: {
+          Element_000: {
+            topStr: "<FONT COLOR='#A9D0F5'>무작위 각인 효과</FONT>",
+            contentStr: {
+              Element_000: {
+                contentStr: "[<FONT COLOR='#FFFFAC'>원한</FONT>] Lv.3",
+              },
+              Element_001: {
+                contentStr: "[<FONT COLOR='#FFFFAC'>예리한 둔기</FONT>] Lv.2",
+              },
+              Element_002: {
+                contentStr: "[<FONT COLOR='#FE2E2E'>공격속도 감소</FONT>] Lv.1",
+              },
+            },
+          },
+        },
+      },
+    });
+    expect(parseTooltip(raw)?.engravings).toEqual([
+      { name: "원한", level: 3, harmful: false, bonus: null },
+      { name: "예리한 둔기", level: 2, harmful: false, bonus: null },
+      { name: "공격속도 감소", level: 1, harmful: true, bonus: null },
+    ]);
+  });
+
+  it("splits accessory polish lines on <BR>/<br> and reads HEX without #", () => {
+    const raw = JSON.stringify({
+      Element_005: {
+        type: "ItemPartBox",
+        value: {
+          Element_000: "<FONT COLOR='#A9D0F5'>연마 효과</FONT>",
+          Element_001:
+            "<FONT COLOR='FE9600'>무기 공격력 +960</FONT><BR><font color='fe9600'>추가&nbsp;피해 +2.60%</font><br>적에게 주는 피해 +2.00%",
+        },
+      },
+    });
+    expect(parseTooltip(raw)?.options).toEqual([
+      { rank: "상", text: "무기 공격력 +960", colors: ["#FE9600"] },
+      { rank: "상", text: "추가 피해 +2.60%", colors: ["#FE9600"] },
+      { rank: null, text: "적에게 주는 피해 +2.00%", colors: [] },
+    ]);
+  });
+
+  it("decodes entities once and never yields markup", () => {
+    expect(plainText("a&amp;lt;b&gt;&nbsp;&#39;c&#39;")).toBe("a&lt;b> 'c'");
+    const parsed = parseTooltip(
+      JSON.stringify({
+        Element_000: {
+          type: "SingleTextBox",
+          value: "&lt;img src=x onerror=alert(1)&gt;<script>x</script>",
+        },
+      }),
+    );
+    // Rendered as React text only; the parser output contains no live tags.
+    expect(parsed?.lines.join("")).not.toMatch(/<script/i);
   });
 });

@@ -28,7 +28,7 @@ import {
   rateGate,
 } from "../src/api";
 import { ArkLens } from "../src/main";
-import { queryClient } from "../src/session";
+import { clearNotFound, queryClient, writeCache } from "../src/session";
 import { getKey, saveKey } from "../src/storage";
 
 const token = "test.fixture.value";
@@ -43,6 +43,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   queryClient.clear();
+  clearNotFound();
   server.resetHandlers();
   localStorage.clear();
   sessionStorage.clear();
@@ -68,6 +69,7 @@ describe("MSW transport", () => {
       http.get(endpoint, ({ request }) => {
         expect(new URL(request.url).search).toBe("?filters=" + ARMORY_FILTERS);
         expect(request.headers.get("authorization")).toBe("bearer " + token);
+        expect(request.url).not.toContain(token);
         return HttpResponse.json(armory);
       }),
     );
@@ -160,16 +162,7 @@ describe("character views with MSW", () => {
         return HttpResponse.json(siblings);
       }),
     );
-    vi.stubGlobal("HTMLDialogElement", window.HTMLDialogElement);
-    const dialog = window.HTMLDialogElement.prototype;
-    const originalShow = dialog.showModal;
-    const originalClose = dialog.close;
-    dialog.showModal = function () {
-      this.setAttribute("open", "");
-    };
-    dialog.close = function () {
-      this.removeAttribute("open");
-    };
+    const restore = stubDialog();
     try {
       go();
       await screen.findByRole("heading", { name: /은하수바리케이드/ });
@@ -201,9 +194,7 @@ describe("character views with MSW", () => {
       expect(armoryCalls).toBe(1);
       expect(siblingsCalls).toBe(1);
     } finally {
-      dialog.showModal = originalShow;
-      dialog.close = originalClose;
-      vi.unstubAllGlobals();
+      restore();
     }
   });
   it("keeps cached sections above a maintenance refresh failure and sets the cooldown", async () => {
@@ -295,5 +286,125 @@ describe("character views with MSW", () => {
     ).toBeTruthy();
     expect(calls).toBe(1);
     expect(document.documentElement.dataset.theme).toBe("light");
+  });
+});
+
+function stubDialog() {
+  const dialog = window.HTMLDialogElement.prototype;
+  const originalShow = dialog.showModal;
+  const originalClose = dialog.close;
+  dialog.showModal = function () {
+    this.setAttribute("open", "");
+  };
+  dialog.close = function () {
+    this.removeAttribute("open");
+  };
+  return () => {
+    cleanup();
+    dialog.showModal = originalShow;
+    dialog.close = originalClose;
+  };
+}
+
+describe("review fixes", () => {
+  it("percent-encodes reserved characters in the name but keeps literal + in filters", () => {
+    expect(armoryPath(" a b/#?+ ")).toBe(
+      "/armories/characters/a%20b%2F%23%3F%2B?filters=" + ARMORY_FILTERS,
+    );
+    expect(ARMORY_FILTERS).not.toMatch(/%2B|,|\s/);
+  });
+
+  it("negative-caches a missing character so a repeat search spends no quota", async () => {
+    let calls = 0;
+    server.use(
+      http.get(endpoint, () => {
+        calls++;
+        return HttpResponse.json(null);
+      }),
+    );
+    const first = go();
+    await screen.findByRole("heading", { name: /캐릭터를 찾을 수 없습니다/ });
+    first.unmount();
+    render(<ArkLens />);
+    await screen.findByRole("heading", { name: /캐릭터를 찾을 수 없습니다/ });
+    expect(calls).toBe(1);
+  });
+
+  it("promotes an unverified key to ok after a successful lookup", async () => {
+    server.use(http.get(endpoint, () => HttpResponse.json(armory)));
+    saveKey("local", {
+      token,
+      savedAt: new Date().toISOString(),
+      status: "unverified",
+    });
+    go(hash, false);
+    await screen.findByRole("heading", { name: /은하수바리케이드/ });
+    await waitFor(() => expect(getKey()?.value.status).toBe("ok"));
+    expect(getKey()?.value.validatedAt).toEqual(expect.any(String));
+  });
+
+  it("shows a null siblings response as an empty roster, not an error", async () => {
+    server.use(
+      http.get(endpoint, () => HttpResponse.json(armory)),
+      http.get(API_BASE + "/characters/:name/siblings", () =>
+        HttpResponse.json(null),
+      ),
+    );
+    const restore = stubDialog();
+    try {
+      go();
+      await screen.findByRole("heading", { name: /은하수바리케이드/ });
+      fireEvent.click(screen.getByRole("button", { name: "원정대 캐릭터" }));
+      expect(
+        await screen.findByText("표시할 원정대 캐릭터가 없습니다."),
+      ).toBeTruthy();
+      expect(screen.queryByRole("alert")).toBeNull();
+    } finally {
+      restore();
+    }
+  });
+
+  it("drops the oldest cache entries when sessionStorage is full", () => {
+    const setItem = Storage.prototype.setItem;
+    const spy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(function (this: Storage, key, value) {
+        if (value.length > 400)
+          throw new DOMException("full", "QuotaExceededError");
+        setItem.call(this, key, value);
+      });
+    try {
+      const entry = (n: number) =>
+        ["/p" + n, { at: n, keySavedAt: "k", data: "x".repeat(100) }] as [
+          string,
+          { at: number; keySavedAt: string; data: unknown },
+        ];
+      writeCache([1, 2, 3, 4, 5].map(entry));
+      const saved = JSON.parse(sessionStorage.getItem("arklens.cache.v1")!);
+      expect(Object.keys(saved).length).toBeGreaterThan(0);
+      expect(Object.keys(saved).at(-1)).toBe("/p5");
+      expect(saved["/p1"]).toBeUndefined();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("allows the profile image host in the production CSP and keeps scripts self-only", async () => {
+    const html = (await import("../index.html?raw")).default;
+    const csp = html.match(/content="(default-src[^"]+)"/)?.[1] ?? "";
+    const directive = (name: string) =>
+      csp
+        .split(";")
+        .map((part) => part.trim())
+        .find((part) => part.startsWith(name + " "));
+    expect(directive("img-src")).toContain("https://img.lostark.co.kr");
+    expect(directive("img-src")).toContain(
+      "https://cdn-lostark.game.onstove.com",
+    );
+    expect(directive("script-src")).toBe("script-src 'self'");
+    expect(directive("connect-src")).toBe(
+      "connect-src 'self' https://developer-lostark.game.onstove.com",
+    );
+    expect(html).toContain('name="referrer" content="no-referrer"');
   });
 });
