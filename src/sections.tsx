@@ -1,6 +1,8 @@
 import { useId, useState, type ReactNode } from "react";
 import { engravingIcon } from "./data/engraving-icons";
+import { CoreDetail } from "./CoreDetail";
 import type { Armory, Equipment, Profile } from "./models";
+import { gridEffectTooltipLines } from "./parse/arkgrid";
 import {
   accessoryTypes,
   armorOrder,
@@ -159,8 +161,13 @@ export function PassiveCard({ data }: { data: Armory["ArkPassive"] }) {
 }
 
 export function GridCard({ data }: { data: Armory["ArkGrid"] }) {
+  const [selection, setSelection] = useState<{
+    index: number;
+    trigger: HTMLButtonElement;
+  } | null>(null);
   const slots = data?.Slots ?? [];
   const effects = data?.Effects ?? [];
+  const selectedSlot = slots.find((slot) => slot.Index === selection?.index);
   const sum = (kind: string) =>
     slots
       .filter((slot) => slot.Name.includes(kind))
@@ -184,23 +191,33 @@ export function GridCard({ data }: { data: Armory["ArkGrid"] }) {
           const [type, name] = slot.Name.split(" : ");
           const gems = slot.Gems ?? [];
           return (
-            <div key={slot.Index} className="core" data-grade={slot.Grade}>
+            <button
+              key={slot.Index}
+              type="button"
+              className="core"
+              data-grade={slot.Grade}
+              aria-haspopup="dialog"
+              onClick={(event) =>
+                setSelection({
+                  index: slot.Index,
+                  trigger: event.currentTarget,
+                })
+              }
+            >
               <GradeIcon
                 small
                 grade={slot.Grade}
                 label={type.slice(0, 1)}
                 src={slot.Icon}
               />
-              <div className="core-name">
-                <Tooltip lines={tooltipLines(slot.Tooltip)}>
-                  <strong>{name ?? type}</strong>
-                </Tooltip>
-                <div className="small muted">
+              <span className="core-name">
+                <strong>{name ?? type}</strong>
+                <span className="small muted">
                   {name && type + " · "}
                   {slot.Grade} · {slot.Point}P
-                </div>
-              </div>
-              <div
+                </span>
+              </span>
+              <span
                 className="gemdots"
                 aria-label={
                   "활성 젬 " +
@@ -212,16 +229,23 @@ export function GridCard({ data }: { data: Armory["ArkGrid"] }) {
                 {gems.map((gem, index) => (
                   <i
                     title={gem.Grade + (gem.IsActive ? " 활성" : " 비활성")}
-                    key={index}
+                    key={gem.Index ?? index}
                     data-grade={gem.Grade}
                     className={gem.IsActive ? "" : "off"}
                   />
                 ))}
-              </div>
-            </div>
+              </span>
+            </button>
           );
         })}
       </div>
+      {selection && selectedSlot && (
+        <CoreDetail
+          slot={selectedSlot}
+          trigger={selection.trigger}
+          onDismiss={() => setSelection(null)}
+        />
+      )}
       {effects.length > 0 && (
         <table className="grid-effects">
           <caption>코어 효과</caption>
@@ -229,7 +253,7 @@ export function GridCard({ data }: { data: Armory["ArkGrid"] }) {
             {effects.map((effect, index) => (
               <tr key={index} className={effect.Level < 5 ? "muted" : ""}>
                 <th scope="row">
-                  <Tooltip lines={tooltipLines(effect.Tooltip)}>
+                  <Tooltip lines={gridEffectTooltipLines(effect.Tooltip)}>
                     {effect.Name}
                   </Tooltip>
                 </th>

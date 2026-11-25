@@ -85,7 +85,13 @@ export type Armory = {
       | (Item & {
           Index: number;
           Point: number;
-          Gems?: { IsActive: boolean; Grade: string }[] | null;
+          Gems?: {
+            Index?: number;
+            Icon?: string;
+            IsActive: boolean;
+            Grade: string;
+            Tooltip?: string | null;
+          }[] | null;
         })[]
       | null;
     Effects?: { Name: string; Level: number; Tooltip?: string }[] | null;
