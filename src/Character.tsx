@@ -539,7 +539,7 @@ export default function Character({
             >
               {tab === view &&
                 (view === "transfer" ? (
-                  <TransferTab data={data} name={name} footer={footer} />
+                  <TransferTab data={data} footer={footer} />
                 ) : (
                   <div className="grid">
                     <div className="col">

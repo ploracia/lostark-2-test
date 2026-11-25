@@ -342,35 +342,72 @@ describe("character views with MSW", () => {
     },
   );
 
-  it("focuses, validates, saves and clears transfer overrides locally", async () => {
+  it("consolidates the transfer layout and discards retired overrides", async () => {
     const armoryRequest = vi.fn(() => HttpResponse.json(armory));
     server.use(http.get(endpoint, armoryRequest));
+    localStorage.setItem(
+      "mokokoloa.transfer.v1",
+      JSON.stringify({ [name]: { vambraceHoning: 12 } }),
+    );
+    localStorage.setItem(
+      "arklens.transfer.v1",
+      JSON.stringify({ [name]: { gearItemLevel: { 무기: 1800 } } }),
+    );
     go(hash + "/transfer");
-    await screen.findByText("1,788.75");
-    const assumption = screen.getByText(/완갑 재련 단계는 확인 필요로 표시/);
-    const edit = within(assumption).getByRole("button", { name: "바꾸기" });
-    const field = screen.getByLabelText(
-      "기존 완갑 재련 단계",
-    ) as HTMLInputElement;
-    const details = field.closest("details");
-    expect(details?.open).toBe(false);
-    fireEvent.click(edit);
-    expect(details?.open).toBe(true);
-    expect(document.activeElement).toBe(field);
-    fireEvent.change(field, { target: { value: "26" } });
-    expect(field.getAttribute("aria-invalid")).toBe("true");
-    expect(localStorage.getItem("mokokoloa.transfer.v1")).toBeNull();
-    fireEvent.change(field, { target: { value: "12" } });
-    expect(screen.getAllByText("재련 +12")).toHaveLength(2);
-    fireEvent.click(screen.getByRole("tab", { name: "현재" }));
-    fireEvent.click(screen.getByRole("tab", { name: /이관/ }));
-    expect(screen.getAllByText("재련 +12")).toHaveLength(2);
-    fireEvent.click(screen.getByRole("button", { name: "모두 지우기" }));
-    expect(screen.queryByText("재련 +12")).toBeNull();
+    expect(await screen.findByText("1,788.75")).toBeTruthy();
+    expect(screen.getAllByRole("group")).toHaveLength(16);
+    const weapon = within(screen.getByRole("group", { name: "무기" }));
+    expect(weapon.getByText(/광휘의 수호 검.*재련 \+23/)).toBeTruthy();
+    expect(weapon.getAllByText("공식 확정").length).toBeGreaterThan(0);
+    expect(weapon.queryByText(/엘라|연동 5부위/)).toBeNull();
     expect(
-      JSON.parse(localStorage.getItem("mokokoloa.transfer.v1") ?? "null"),
-    ).toEqual({});
+      within(screen.getByRole("group", { name: "허리띠" })).getByText("신규"),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByRole("group", { name: "완갑" })).getByText(
+        "재련 단계 확인 필요",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(
+        /장비 변환|보석 → 광휘|적용 중인 가정|추가 정보 입력|환급·지급 아이템|이 화면이 계산하지 않는 것|기존 거래 가능 횟수 승계/,
+      ),
+    ).toBeNull();
+    expect(localStorage.getItem("mokokoloa.transfer.v1")).toBeNull();
+    expect(localStorage.getItem("arklens.transfer.v1")).toBeNull();
     expect(armoryRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the equipped Esther weapon and linked estimate inside the weapon slot", async () => {
+    const equipment = armory.ArmoryEquipment.map((item) =>
+      item.Type !== "무기"
+        ? item
+        : {
+            ...item,
+            Grade: "에스더",
+            Name: "+10 에스더 무기",
+            Tooltip: JSON.stringify({
+              Element_001: {
+                type: "ItemTitle",
+                value: { leftStr2: "<FONT>아이템 레벨 1830</FONT>" },
+              },
+              Element_002: { type: "SingleTextBox", value: "엘라 3단계" },
+            }),
+          },
+    );
+    server.use(
+      http.get(endpoint, () =>
+        HttpResponse.json({ ...armory, ArmoryEquipment: equipment }),
+      ),
+    );
+    go(hash + "/transfer");
+    const weapon = within(await screen.findByRole("group", { name: "무기" }));
+    expect(weapon.getByText("T4 에스더")).toBeTruthy();
+    expect(weapon.getByText(/1,865/)).toBeTruthy();
+    expect(weapon.getByText(/엘라 4단계/)).toBeTruthy();
+    expect(weapon.getByText(/연동 5부위 1,815/)).toBeTruthy();
+    expect(weapon.getByText("추정")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "에스더 무기" })).toBeNull();
   });
 
   it.each([

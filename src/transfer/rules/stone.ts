@@ -37,15 +37,15 @@ export const SUPPORT_ENGRAVINGS = [
   "최대 마나 증가",
   "폭발물 전문가",
 ] as const;
-/** 공지 13608 표9 = inven_19.png. [합계, 높은 포인트(null=무관), 슬롯 수, 단계, 추가 지급(+@)] */
+/** 공지 13608 표9 = inven_19.png. [합계, 높은 포인트(null=무관), 슬롯 수, 단계] */
 export const STONE_UPGRADE = [
-  [4, 2, 1, 3, false],
-  [4, 3, 1, 5, false],
-  [5, null, 2, 7, false],
-  [6, 4, 3, 7, false],
-  [6, 3, 4, 7, false],
-  [7, 4, 5, 7, false],
-  [8, 4, 5, 7, true],
+  [4, 2, 1, 3],
+  [4, 3, 1, 5],
+  [5, null, 2, 7],
+  [6, 4, 3, 7],
+  [6, 3, 4, 7],
+  [7, 4, 5, 7],
+  [8, 4, 5, 7],
 ] as const;
 /** 표9 참고 열(7/7, 9/6, 10/8 ...)의 세공 노드 수 → 활성화 포인트. 6 미만은 공지에 없어 계산 불가. */
 export const NODE_TO_POINT: Readonly<Record<number, number>> = {

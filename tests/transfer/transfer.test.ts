@@ -3,10 +3,8 @@ import armory from "../../fixtures/armory-sample.json";
 import { gradeAccessory } from "../../src/transfer/accessory";
 import { analyzeBracelet } from "../../src/transfer/bracelet";
 import { convertEsther } from "../../src/transfer/esther";
-import { weakest } from "../../src/transfer/evidence";
 import { extractTransferInput } from "../../src/transfer/extract";
 import { mapGear } from "../../src/transfer/gear";
-import { convertGems } from "../../src/transfer/gem";
 import { computeTransfer } from "../../src/transfer";
 import { ESTHER_TABLE } from "../../src/transfer/rules/esther";
 import { GEAR_TABLE } from "../../src/transfer/rules/gear";
@@ -36,8 +34,6 @@ describe("공지 13608", () => {
     expect(DEALER_ENGRAVINGS).toContain("각성");
     expect(SUPPORT_ENGRAVINGS).toContain("각성");
     expect(STONE_UPGRADE).toHaveLength(7);
-    expect(weakest("official", "estimated", "unknown")).toBe("unknown");
-    expect(weakest("official", "estimated")).toBe("estimated");
   });
   it.each([
     [1726, "영웅", 1, 1730],
@@ -60,17 +56,15 @@ describe("공지 13608", () => {
     expect(mapGear(input)).not.toHaveProperty("value");
   });
   it.each([
-    [5, 0, 1600, 1100, 0, 28, 3310],
-    [9, 3, 1800, 1840, 25, 20, 10500],
-    [10, 3, 1830, 1865, 25, 0, 0],
+    [5, 0, 1600, 1100, 0],
+    [9, 3, 1800, 1840, 25],
+    [10, 3, 1830, 1865, 25],
   ] as const)(
     "표2–4 에스더 %i / %i",
-    (evolution, ella, itemLevel, after, honing, energy, kit) => {
+    (evolution, ella, itemLevel, after, honing) => {
       expect(convertEsther({ evolution, ella, itemLevel })).toMatchObject({
         itemLevel: { value: after },
         honing: { value: honing },
-        energy: { value: energy },
-        kit: { value: kit },
       });
     },
   );
@@ -84,9 +78,14 @@ describe("공지 13608", () => {
     expect(
       convertEsther({ evolution: 8, ella: null, itemLevel: null }).itemLevel,
     ).toMatchObject({ kind: "range", min: 1625, max: 1735 });
-    const result = computeTransfer(fixture, {
-      gearItemLevel: { 무기: 1800 },
-      storedEsther: { evolution: 10, ella: 3 },
+    const result = computeTransfer({
+      ...fixture,
+      esther: { evolution: 10, ella: 3, itemLevel: 1830 },
+      gear: fixture.gear.map((item) =>
+        item.part === "무기"
+          ? { ...item, grade: "에스더", itemLevel: 1830 }
+          : item,
+      ),
     });
     expect(
       result.slots.find((slot) => slot.slot === "무기")?.itemLevel,
@@ -110,7 +109,6 @@ describe("공지 13608", () => {
     quality: 67,
     tier: 4,
     grade: "고대",
-    tradeCount: null,
     options: [],
   };
   it.each([
@@ -207,16 +205,16 @@ describe("공지 13608", () => {
     expect(grade).not.toHaveProperty("min");
   });
   it.each([
-    [2, 2, 1, 3, false],
-    [3, 1, 1, 5, false],
-    [4, 1, 2, 7, false],
-    [3, 2, 2, 7, false],
-    [9, 7, 2, 7, false],
-    [4, 2, 3, 7, false],
-    [3, 3, 4, 7, false],
-    [4, 3, 5, 7, false],
-    [4, 4, 5, 7, true],
-  ])("표9 스톤 %i/%i", (a, b, slots, level, extra) => {
+    [2, 2, 1, 3],
+    [3, 1, 1, 5],
+    [4, 1, 2, 7],
+    [3, 2, 2, 7],
+    [9, 7, 2, 7],
+    [4, 2, 3, 7],
+    [3, 3, 4, 7],
+    [4, 3, 5, 7],
+    [4, 4, 5, 7],
+  ])("표9 스톤 %i/%i", (a, b, slots, level) => {
     expect(
       convertStone(
         {
@@ -227,10 +225,9 @@ describe("공지 13608", () => {
           ],
         },
         "바드",
-        {},
       ).upgrade,
     ).toMatchObject({
-      value: { slots, level, extra },
+      value: { slots, level },
       evidence: { level: "estimated" },
     });
   });
@@ -244,36 +241,8 @@ describe("공지 13608", () => {
           ],
         },
         "소서리스",
-        {},
-      ).excluded,
-    ).toBe(true);
-  });
-  it("표10 보석 티어 전환과 획득처 예외", () => {
-    const gems = [
-      ["홍염", 3],
-      ["멸화", 10],
-      ["멸화", 2],
-      ["겁화", 7],
-      ["광휘", 8],
-      ["광휘", 8],
-    ] as const;
-    const actual = convertGems(
-      gems.map(([kind, level], slot) => ({ kind, level, slot, bound: true })),
-      {
-        gemSource: { 4: { source: "paid", bound: true } },
-      },
-    );
-    expect(
-      actual.map((gem) =>
-        gem.after === "removed"
-          ? gem.after
-          : gem.after.kind === "value"
-            ? gem.after.value.level
-            : null,
-      ),
-    ).toEqual([1, 8, "removed", 7, 8, 8]);
-    expect(actual[4].choiceBox).toEqual({ bound: 8, tradeable: 7 });
-    expect(actual[5].choiceBox).toBeNull();
+      ).upgrade,
+    ).toMatchObject({ value: { slots: 0 }, evidence: { level: "official" } });
   });
 });
 
@@ -295,11 +264,6 @@ describe("이관 엔진 통합", () => {
       result.slots.find((slot) => slot.slot === "허리띠")?.slotHoning,
     ).toMatchObject({ value: 0 });
     expect(
-      computeTransfer(fixture, { vambraceHoning: 12 }).slots.find(
-        (slot) => slot.slot === "완갑",
-      )?.slotHoning,
-    ).toMatchObject({ value: 12 });
-    expect(
       result.accessories.map((entry) =>
         entry.scrollGrade?.kind === "value"
           ? entry.scrollGrade.value
@@ -311,18 +275,9 @@ describe("이관 엔진 통합", () => {
       evidence: { level: "estimated" },
     });
     expect(result.bracelet?.scrollGrade.kind).toBe("none");
-    expect(result.gems).toHaveLength(11);
-    expect(
-      result.gems.every(
-        (gem) =>
-          gem.after !== "removed" &&
-          gem.after.kind === "value" &&
-          gem.after.value.level === gem.before.level,
-      ),
-    ).toBe(true);
     expect(result).toMatchSnapshot();
   });
-  it("빈 응답과 미확인 수량의 숫자를 만들지 않음", () => {
+  it("빈 응답에서 아이템 레벨을 추측하지 않음", () => {
     const result = computeTransfer(
       extractTransferInput({
         ArmoryEquipment: [
@@ -332,10 +287,8 @@ describe("이관 엔진 통합", () => {
     );
     expect(result.slots).toHaveLength(16);
     expect(result.after.avg16.kind).toBe("none");
-    expect(
-      result.payouts.every(
-        (row) => row.amount.kind === "none" && !("value" in row.amount),
-      ),
-    ).toBe(true);
+    expect(result.slots.every((slot) => slot.itemLevel.kind === "none")).toBe(
+      true,
+    );
   });
 });

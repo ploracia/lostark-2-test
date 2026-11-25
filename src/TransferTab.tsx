@@ -1,22 +1,13 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import type { Armory } from "./models";
-import { read, write } from "./storage";
+import { writeRaw } from "./storage";
 import { computeTransfer, type TransferResult } from "./transfer";
 import { extractTransferInput } from "./transfer/extract";
 import { NOTICE_DATE, NOTICE_URL } from "./transfer/rules/meta";
-import { ARMOR_PAIRS, SLOT_LAYOUT } from "./transfer/rules/slots";
-import type {
-  Est,
-  Evidence,
-  GearIn,
-  NewSlotResult,
-  TransferOverrides,
-} from "./transfer/types";
+import { SLOT_LAYOUT } from "./transfer/rules/slots";
+import type { Est, Evidence, GearIn, NewSlotResult } from "./transfer/types";
 import { Card, GradeIcon } from "./ui";
-import { OverridesPanel, countOverrides } from "./TransferOverrides";
-import { weakest } from "./transfer/evidence";
 
-const STORAGE_KEY = "mokokoloa.transfer.v1";
 const labels = { official: "공식 확정", estimated: "추정", unknown: "미확인" };
 const decimal = new Intl.NumberFormat("ko-KR", {
   minimumFractionDigits: 2,
@@ -24,12 +15,6 @@ const decimal = new Intl.NumberFormat("ko-KR", {
 });
 const integer = new Intl.NumberFormat("ko-KR");
 const numeric = (n: number) => integer.format(n);
-
-/** 여러 근거 중 가장 약한 것(미확인 < 추정 < 공식 확정)을 고릅니다. */
-function weakestEvidence(list: Evidence[]): Evidence {
-  const level = weakest(...list.map((evidence) => evidence.level));
-  return list.find((evidence) => evidence.level === level) ?? list[0];
-}
 
 export function EvidenceBadge({ evidence }: { evidence: Evidence }) {
   return (
@@ -67,17 +52,24 @@ export function EstValue<T>({
 function NumberResult({
   estimate,
   suffix = "",
+  showEvidence = true,
 }: {
   estimate: Est<number>;
   suffix?: string;
+  showEvidence?: boolean;
 }) {
   return (
     <>
       <EstValue
         estimate={estimate}
         format={(value) => numeric(value) + suffix}
-      />{" "}
-      <EvidenceBadge evidence={estimate.evidence} />
+      />
+      {showEvidence && (
+        <>
+          {" "}
+          <EvidenceBadge evidence={estimate.evidence} />
+        </>
+      )}
     </>
   );
 }
@@ -86,7 +78,6 @@ const notice = (
     공지 보기 ↗
   </a>
 );
-const partNames = [...ARMOR_PAIRS.map(([part]) => part), "무기"] as const;
 
 function TransferSummary({ result }: { result: TransferResult }) {
   const avg = result.after.avg16;
@@ -150,178 +141,96 @@ function TransferSummary({ result }: { result: TransferResult }) {
 
 function SlotChip({
   slot,
-  compact = false,
+  before,
+  linkedLevel,
 }: {
   slot: NewSlotResult;
-  compact?: boolean;
+  before?: GearIn;
+  linkedLevel?: Est<number>;
 }) {
+  const hasDistinctEvidence = (field: Est<number>) =>
+    field.evidence.level !== slot.itemLevel.evidence.level;
   return (
-    <div className={"transfer-slot" + (slot.isNew ? " is-new" : "")}>
+    <div
+      role="group"
+      aria-label={slot.slot}
+      className={"transfer-slot" + (slot.isNew ? " is-new" : "")}
+    >
       <GradeIcon grade={slot.grade ?? ""} label={slot.slot[0]} />
-      <span>
-        <b>{slot.slot}</b>{" "}
-        {slot.isNew && <small className="pill new-pill">신규</small>}
-        <span className="slot-stats">
-          <EstValue estimate={slot.itemLevel} format={numeric} />
-          {" · "}
-          {slot.ella ? (
-            <EstValue
-              estimate={slot.ella}
-              format={(value) => "엘라 " + value}
-            />
-          ) : (
-            slot.grade && "T" + slot.tier + " " + slot.grade
+      <div className="transfer-slot-info">
+        <div className="transfer-slot-title">
+          <b>{slot.slot}</b>
+          {slot.isNew && <span className="pill new-pill">신규</span>}
+          {slot.grade && (
+            <span className="muted">
+              T{slot.tier} {slot.grade}
+            </span>
+          )}
+        </div>
+        <div className="transfer-slot-level num">
+          <NumberResult estimate={slot.itemLevel} />
+        </div>
+        <div className="transfer-slot-stats">
+          {slot.ella && (
+            <span>
+              엘라{" "}
+              <NumberResult
+                estimate={slot.ella}
+                suffix="단계"
+                showEvidence={hasDistinctEvidence(slot.ella)}
+              />
+            </span>
           )}
           {slot.polish.kind !== "none" && (
-            <>
-              {" "}
-              ·{" "}
-              <EstValue
+            <span>
+              연마{" "}
+              <NumberResult
                 estimate={slot.polish}
-                format={(level) => level + "연마"}
+                suffix="단계"
+                showEvidence={hasDistinctEvidence(slot.polish)}
               />
-            </>
+            </span>
           )}
-          {slot.itemLevel.evidence.level === "estimated" && (
-            <>
-              {" "}
-              <EvidenceBadge evidence={slot.itemLevel.evidence} />
-            </>
-          )}
-        </span>
-        {slot.slotHoning && (
-          <small className="muted">
-            <EstValue
-              estimate={slot.slotHoning}
-              format={(value) => "재련 +" + value}
-            />{" "}
-            {slot.slotHoning.evidence.level !== "official" && (
-              <EvidenceBadge evidence={slot.slotHoning.evidence} />
-            )}
-          </small>
-        )}
-        {!compact && slot.slotHoning && (
-          <small className="muted">
-            장인의 기운{" "}
-            {slot.artisanEnergy ? (
+          {slot.slotHoning && (
+            <span>
               <EstValue
-                estimate={slot.artisanEnergy}
-                format={(value) => value + "% 유지"}
+                estimate={slot.slotHoning}
+                format={(value) => "재련 +" + value}
               />
-            ) : (
-              "유지"
-            )}
-          </small>
+              {hasDistinctEvidence(slot.slotHoning) && (
+                <>
+                  {" "}
+                  <EvidenceBadge evidence={slot.slotHoning.evidence} />
+                </>
+              )}
+            </span>
+          )}
+        </div>
+        {linkedLevel && (
+          <div className="small">
+            연동 5부위 <NumberResult estimate={linkedLevel} />
+          </div>
         )}
-      </span>
+        <small className="transfer-origin muted">
+          <span aria-hidden="true">← </span>
+          {before?.name.replace(/^\+\d+\s+/, "") ??
+            slot.from + " 장착 정보 없음"}
+          {before?.itemLevel != null && " · " + numeric(before.itemLevel)}
+          {before?.honing != null &&
+            (before.grade === "에스더"
+              ? " · 진화 " + before.honing + "단계"
+              : " · 재련 +" + before.honing)}
+        </small>
+      </div>
     </div>
   );
 }
 
-function GearConversion({
+function SlotLayout16({
   gear,
   slots,
-}: {
-  gear: GearIn[];
-  slots: NewSlotResult[];
-}) {
-  return (
-    <Card
-      title="장비 변환"
-      extra={<span className="sub muted">6부위 → 16부위</span>}
-    >
-      {partNames.map((part) => {
-        const before = gear.find((item) => item.part === part);
-        const next = slots.filter((slot) => slot.from === part);
-        const description =
-          part +
-          " " +
-          (before?.itemLevel ?? "레벨 확인 필요") +
-          "에서 " +
-          next
-            .map(
-              (slot) =>
-                slot.slot +
-                " " +
-                (slot.itemLevel.kind === "value"
-                  ? slot.itemLevel.value
-                  : slot.itemLevel.kind === "range"
-                    ? slot.itemLevel.min + "~" + slot.itemLevel.max
-                    : slot.itemLevel.label),
-            )
-            .join(", ") +
-          "로 이관";
-        return (
-          <div
-            key={part}
-            className="conv-row"
-            role="group"
-            aria-label={description}
-          >
-            <div>
-              <div className="transfer-source">
-                <GradeIcon
-                  grade={before?.grade ?? ""}
-                  label={part[0]}
-                  src={before?.icon}
-                />
-                <span>
-                  <b>{part}</b>
-                  <small className="muted">
-                    {before?.name ?? "장착 장비 없음"}
-                  </small>
-                  <span className="num">
-                    {before?.itemLevel == null
-                      ? "레벨 확인 필요"
-                      : numeric(before.itemLevel)}
-                  </span>
-                  {before?.quality != null && (
-                    <>
-                      {" "}
-                      <span className="pill">품질 {before.quality}</span>
-                    </>
-                  )}
-                </span>
-              </div>
-              {!!before?.advanced && (
-                <p className="small muted">
-                  상급 재련 {before.advanced}단계 제거 · 현재 아이템 레벨에 이미
-                  반영되어 이관 기준에 포함됩니다.
-                </p>
-              )}
-            </div>
-            <span className="conv-arrow muted" aria-hidden="true">
-              →
-            </span>
-            <div className="conv-destinations">
-              {[true, false].map((left) => (
-                <div key={String(left)}>
-                  {next
-                    .filter((slot) => Boolean(slot.slotHoning) === left)
-                    .map((slot) => (
-                      <SlotChip slot={slot} key={slot.slot} />
-                    ))}
-                </div>
-              ))}
-            </div>
-            {next.length > 0 && (
-              <EvidenceBadge
-                evidence={weakestEvidence(
-                  next.flatMap((slot) => [
-                    slot.itemLevel.evidence,
-                    slot.polish.evidence,
-                  ]),
-                )}
-              />
-            )}
-          </div>
-        );
-      })}
-    </Card>
-  );
-}
-
-function SlotLayout16({ slots }: { slots: NewSlotResult[] }) {
+  esther,
+}: Pick<TransferResult, "slots" | "esther"> & { gear: GearIn[] }) {
   const bySlot = new Map(slots.map((slot) => [slot.slot, slot]));
   return (
     <Card title="이관 후 16부위 배치도">
@@ -330,69 +239,24 @@ function SlotLayout16({ slots }: { slots: NewSlotResult[] }) {
           <div key={side[0]}>
             {side.map((name) => {
               const slot = bySlot.get(name);
-              return slot && <SlotChip key={name} slot={slot} compact />;
+              return (
+                slot && (
+                  <SlotChip
+                    key={name}
+                    slot={slot}
+                    before={gear.find((item) => item.part === slot.from)}
+                    linkedLevel={
+                      name === "무기" && slot.ella
+                        ? esther?.linkedLevel
+                        : undefined
+                    }
+                  />
+                )
+              );
             })}
           </div>
         ))}
       </div>
-    </Card>
-  );
-}
-
-function EstherCard({ esther }: Pick<TransferResult, "esther">) {
-  if (!esther)
-    return (
-      <details className="card transfer-details">
-        <summary>
-          에스더 무기 <small className="muted">· 장착한 에스더 무기 없음</small>
-        </summary>
-        <p className="small muted">
-          장착한 에스더 무기가 없습니다. 보관 중인 에스더 무기가 있으면 추가
-          정보에 입력하세요.
-        </p>
-      </details>
-    );
-  const down =
-    esther.itemLevel.kind === "value" &&
-    esther.before.itemLevel !== null &&
-    esther.itemLevel.value < esther.before.itemLevel;
-  return (
-    <Card title="에스더 무기">
-      <p>
-        진화{" "}
-        {esther.before.evolution >= 0
-          ? esther.before.evolution + "단계"
-          : "확인 필요"}{" "}
-        ·{" "}
-        {esther.before.ella === null
-          ? "엘라 확인 필요"
-          : esther.before.ella === 0
-            ? "엘라 미부여"
-            : "엘라 " + esther.before.ella + "단계"}
-      </p>
-      <p>
-        <span className="num">
-          {esther.before.itemLevel ?? "레벨 확인 필요"}
-        </span>{" "}
-        <span className={down ? "delta down" : ""} aria-hidden="true">
-          →
-        </span>{" "}
-        <NumberResult estimate={esther.itemLevel} />
-      </p>
-      {down && <p className="delta down">아이템 레벨 하락, 대신 재료 환급</p>}
-      {esther.before.evolution === 7 && esther.before.ella === 3 && (
-        <p className="small muted">
-          기존 아이템 레벨 1785는 공지 원문 수치입니다.
-        </p>
-      )}
-      <p>
-        신규 엘라 <NumberResult estimate={esther.ella} suffix="단계" /> · 연마{" "}
-        <NumberResult estimate={esther.polish} suffix="단계" />
-      </p>
-      <p>
-        무기 슬롯 재련 <NumberResult estimate={esther.honing} suffix="단계" /> ·
-        연동 5부위 <NumberResult estimate={esther.linkedLevel} />
-      </p>
     </Card>
   );
 }
@@ -404,7 +268,7 @@ function AccessoryScrolls({
     <Card title="장신구 → 마력 주입 주문서">
       {!accessories.length && <p className="muted">장착 장신구 없음</p>}
       {accessories.map(
-        ({ accessory, outcome, reason, scrollGrade, tradeCount, evidence }) => (
+        ({ accessory, outcome, reason, scrollGrade, evidence }) => (
           <div className="scroll-row" key={accessory.part + accessory.index}>
             <div>
               <b>
@@ -443,12 +307,6 @@ function AccessoryScrolls({
               </b>{" "}
               <EvidenceBadge evidence={evidence} />
               <p className="small muted">{reason}</p>
-              {outcome === "scroll" && (
-                <p className="small muted">
-                  기존 거래 가능 횟수 승계 ·{" "}
-                  <NumberResult estimate={tradeCount} suffix="회" />
-                </p>
-              )}
             </div>
           </div>
         ),
@@ -539,10 +397,6 @@ function StoneSlots({ stone }: Pick<TransferResult, "stone">) {
                   : " · 서포터 유효 각인 2개")}
             </p>
           )}
-          {upgrade?.extra && <p>추가 아이템 지급 · 종류 미확인</p>}
-          {stone.excluded && (
-            <p className="small muted">초월의 가루로 교체 · 수량 미확인</p>
-          )}
         </>
       ) : (
         <p className="muted">장착 어빌리티 스톤 없음</p>
@@ -551,145 +405,19 @@ function StoneSlots({ stone }: Pick<TransferResult, "stone">) {
   );
 }
 
-function GemConversion({ gems }: Pick<TransferResult, "gems">) {
-  const kinds = new Map<string, number>();
-  gems.forEach(({ before }) => {
-    const kind = before.kind ?? "기타";
-    kinds.set(kind, (kinds.get(kind) ?? 0) + 1);
-  });
-  const converted = gems.filter(
-    (gem) => gem.after !== "removed" && gem.after.kind === "value",
-  );
-  const unchanged =
-    converted.length > 0 &&
-    converted.length === gems.length &&
-    gems.every(
-      ({ before, after }) =>
-        after !== "removed" &&
-        after.kind === "value" &&
-        before.level === after.value.level,
-    );
-  return (
-    <Card
-      title="보석 → 광휘"
-      extra={
-        gems.length ? (
-          <span className="sub muted">
-            {[...kinds].map(([kind, count]) => kind + " " + count).join(" · ") +
-              " → 광휘 " +
-              converted.length +
-              (unchanged ? " (레벨 변화 없음)" : "")}
-          </span>
-        ) : undefined
-      }
-    >
-      <div className="gem-conv">
-        {gems.map(({ before, after, choiceBox }) => (
-          <div
-            key={before.slot}
-            className={
-              "transfer-gem" +
-              (after === "removed" ||
-              (after.kind === "value" && after.value.level !== before.level)
-                ? " changed"
-                : "")
-            }
-          >
-            {after === "removed" ? (
-              <>
-                <s>
-                  {before.kind} Lv.{before.level}
-                </s>
-                <b>제거</b>
-              </>
-            ) : (
-              <>
-                <span>
-                  {before.kind ?? "미확인"} Lv.{before.level}
-                </span>
-                <b>
-                  <EstValue
-                    estimate={after}
-                    format={(value) => "광휘 Lv." + value.level}
-                  />
-                </b>
-                <EvidenceBadge evidence={after.evidence} />
-                {choiceBox && (
-                  <small>
-                    선택 상자 · 거래 불가 {choiceBox.bound}레벨 / 거래 가능{" "}
-                    {choiceBox.tradeable}레벨
-                  </small>
-                )}
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      <p className="small muted">
-        장착 보석은 모두 해제되어 통합 보관함으로 지급됩니다. 귀속 여부 유지.
-      </p>
-    </Card>
-  );
-}
-
-function Payouts({ payouts }: Pick<TransferResult, "payouts">) {
-  return (
-    <Card title="환급·지급 아이템">
-      {payouts.map((row) => (
-        <div className="transfer-payout" key={row.item}>
-          <b>{row.item}</b>
-          <div>
-            <NumberResult estimate={row.amount} />
-          </div>
-          <small className="muted">{row.basis}</small>
-        </div>
-      ))}
-    </Card>
-  );
-}
-
 export function TransferTab({
   data,
-  name,
   footer,
 }: {
   data: Armory;
-  name: string;
   footer: ReactNode;
 }) {
-  const [ov, setOverrides] = useState<TransferOverrides>(() => {
-    const saved = read<Record<string, TransferOverrides>>(
-      "local",
-      STORAGE_KEY,
-      {},
-    );
-    return saved?.[name] ?? {};
-  });
+  useEffect(() => {
+    // Delete retired overrides, including the legacy key handled by writeRaw.
+    writeRaw("local", "mokokoloa.transfer.v1", undefined);
+  }, []);
   const input = useMemo(() => extractTransferInput(data), [data]);
-  const result = useMemo(() => computeTransfer(input, ov), [input, ov]);
-  const panel = useRef<HTMLDetailsElement>(null);
-  const count = countOverrides(ov);
-  function change(next: TransferOverrides) {
-    setOverrides(next);
-    const saved = {
-      ...read<Record<string, TransferOverrides>>("local", STORAGE_KEY, {}),
-    };
-    if (countOverrides(next))
-      Object.defineProperty(saved, name, {
-        value: next,
-        enumerable: true,
-        configurable: true,
-      });
-    else delete saved[name];
-    write("local", STORAGE_KEY, saved);
-  }
-  function edit(field: keyof TransferOverrides) {
-    if (!panel.current) return;
-    panel.current.open = true;
-    panel.current
-      .querySelector<HTMLElement>("[data-field=" + field + "]")
-      ?.focus();
-  }
+  const result = useMemo(() => computeTransfer(input), [input]);
   return (
     <div className="transfer-tab">
       <p className="notice warn">
@@ -700,61 +428,14 @@ export function TransferTab({
         </span>
       </p>
       <TransferSummary result={result} />
-      <div className="grid transfer-grid">
-        <div className="col transfer-results">
-          <GearConversion gear={input.gear} slots={result.slots} />
-          <SlotLayout16 slots={result.slots} />
-          <EstherCard esther={result.esther} />
-          <AccessoryScrolls accessories={result.accessories} />
-          <BraceletSeal bracelet={result.bracelet} />
-          <StoneSlots stone={result.stone} />
-          <GemConversion gems={result.gems} />
-        </div>
-        <div className="col transfer-aside">
-          <div>
-            <OverridesPanel
-              panel={panel}
-              input={input}
-              value={ov}
-              onChange={change}
-            />
-            {count > 0 && (
-              <div className="actions transfer-reset">
-                <button className="btn" onClick={() => change({})}>
-                  모두 지우기
-                </button>
-              </div>
-            )}
-          </div>
-          <Card
-            title="적용 중인 가정"
-            extra={
-              <span className="sub muted">{result.assumptions.length}개</span>
-            }
-          >
-            <ul className="transfer-assumptions">
-              {result.assumptions.map(({ id, text, field }) => (
-                <li key={id}>
-                  {text}{" "}
-                  {field && (
-                    <button className="btn" onClick={() => edit(field)}>
-                      바꾸기
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </Card>
-          <Payouts payouts={result.payouts} />
-          <details className="card transfer-details">
-            <summary>이 화면이 계산하지 않는 것</summary>
-            <p className="small muted">
-              카드 · 특수 장비 · 생활 · 항해 · 카르마 레벨 외 아크 패시브 · 스킬
-              룬 · 콘텐츠 보상. {notice}
-            </p>
-          </details>
-        </div>
-      </div>
+      <SlotLayout16
+        gear={input.gear}
+        slots={result.slots}
+        esther={result.esther}
+      />
+      <AccessoryScrolls accessories={result.accessories} />
+      <BraceletSeal bracelet={result.bracelet} />
+      <StoneSlots stone={result.stone} />
       {footer}
     </div>
   );

@@ -83,10 +83,6 @@ function bestOf(scores: ReturnType<typeof scoreRole>[]) {
 }
 
 export function gradeAccessory(accessory: AccessoryIn, className: string) {
-  const tradeCount =
-    accessory.tradeCount === null
-      ? unknown(source, "횟수 확인 필요")
-      : official(accessory.tradeCount, source);
   function result(
     outcome: "remove" | "shard" | "scroll" | "unknown",
     reason: string,
@@ -97,7 +93,6 @@ export function gradeAccessory(accessory: AccessoryIn, className: string) {
       outcome,
       reason,
       scrollGrade,
-      tradeCount,
       evidence: (scrollGrade ?? official(outcome, source)).evidence,
     };
   }

@@ -1,9 +1,4 @@
-import type { Est, EvidenceLevel } from "./types";
-
-const rank = { unknown: 0, estimated: 1, official: 2 };
-export function weakest(...levels: EvidenceLevel[]) {
-  return levels.reduce((a, b) => (rank[b] < rank[a] ? b : a), "official");
-}
+import type { Est } from "./types";
 export const official = <T>(value: T, source: string): Est<T> => ({
   kind: "value",
   value,

@@ -4,7 +4,6 @@ import { gradeAccessory } from "../../src/transfer/accessory";
 import { convertEsther } from "../../src/transfer/esther";
 import { extractTransferInput } from "../../src/transfer/extract";
 import { mapGear } from "../../src/transfer/gear";
-import { convertGems } from "../../src/transfer/gem";
 import { computeTransfer } from "../../src/transfer";
 import { convertStone } from "../../src/transfer/stone";
 import type { AccessoryIn, TransferInput } from "../../src/transfer/types";
@@ -15,7 +14,6 @@ const base: AccessoryIn = {
   quality: 90,
   tier: 4,
   grade: "고대",
-  tradeCount: 2,
   options: [],
 };
 const stone = (
@@ -119,47 +117,32 @@ describe("검증 보강 · 표5 장신구", () => {
 
 describe("검증 보강 · 표9 스톤 단위", () => {
   it("활성도 +N은 세공 노드 수로 해석", () => {
-    expect(convertStone(stone(9, 7, "node"), "소서리스", {})).toMatchObject({
+    expect(convertStone(stone(9, 7, "node"), "소서리스")).toMatchObject({
       points: [3, 2],
       upgrade: { value: { slots: 2, level: 7 } },
     });
   });
   it("노드 4개를 Lv.4로 읽지 않음", () => {
-    expect(
-      convertStone(stone(10, 4, "node"), "소서리스", {}).upgrade.kind,
-    ).toBe("none");
-    expect(
-      convertStone(stone(4, 4, "lv"), "소서리스", {}).upgrade,
-    ).toMatchObject({ value: { slots: 5, extra: true } });
+    expect(convertStone(stone(10, 4, "node"), "소서리스").upgrade.kind).toBe(
+      "none",
+    );
+    expect(convertStone(stone(4, 4, "lv"), "소서리스").upgrade).toMatchObject({
+      value: { slots: 5, level: 7 },
+    });
   });
-  it("표9에 없는 합계는 반영 없음 추정 + 초월의 가루 미확인 행", () => {
+  it("표9에 없는 합계는 반영 없음으로 추정", () => {
     const input: TransferInput = {
       ...extractTransferInput(armory),
       stone: stone(1, 2, "lv"),
     };
     const result = computeTransfer(input);
     expect(result.stone).toMatchObject({
-      unlisted: true,
       upgrade: { value: { slots: 0 }, evidence: { level: "estimated" } },
     });
-    expect(
-      result.payouts.find((row) => row.item === "초월의 가루")?.amount.kind,
-    ).toBe("none");
   });
 });
 
-describe("검증 보강 · 표10 보석과 에스더 연동", () => {
-  it("툴팁 티어 2 멸화는 제거, 티어 정보 없으면 이름으로 판단", () => {
-    const [t2, t3] = convertGems(
-      [
-        { slot: 0, kind: "멸화", tier: 2, level: 7, bound: null },
-        { slot: 1, kind: "멸화", tier: null, level: 7, bound: null },
-      ],
-      {},
-    );
-    expect(t2.after).toBe("removed");
-    expect(t3.after).toMatchObject({ value: { level: 5 } });
-  });
+describe("검증 보강 · 에스더 연동", () => {
   it("1800 이상 에스더 연동 5부위는 25단계=1800 가정 추정", () => {
     expect(
       convertEsther({ evolution: 10, ella: 3, itemLevel: 1830 }).linkedLevel,
@@ -174,11 +157,9 @@ describe("검증 보강 · 순수성", () => {
   it("입력을 바꾸지 않고 같은 입력에 같은 결과", () => {
     const input = extractTransferInput(armory);
     const frozen = JSON.parse(JSON.stringify(input)) as TransferInput;
-    const ov = { gearItemLevel: { 무기: 1800 } };
-    const first = computeTransfer(input, ov);
+    const first = computeTransfer(input);
     expect(input).toEqual(frozen);
-    expect(ov).toEqual({ gearItemLevel: { 무기: 1800 } });
-    expect(computeTransfer(input, ov)).toEqual(first);
+    expect(computeTransfer(input)).toEqual(first);
   });
   it("빈 장비에서도 16부위를 만들고 숫자를 지어내지 않음", () => {
     const result = computeTransfer(extractTransferInput({}));

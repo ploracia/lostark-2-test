@@ -1,7 +1,6 @@
 import type { Armory } from "../models";
 import { parseTooltip, plainText } from "../parse/tooltip";
 import { ARMOR_PAIRS, API_TYPE_ALIAS } from "./rules/slots";
-import { GEM_KIND_TIER } from "./rules/gem";
 import type { AccessoryIn, Ella, OldPart, TransferInput } from "./types";
 
 const oldParts: readonly string[] = [
@@ -18,14 +17,15 @@ export function extractTransferInput(data: Armory): TransferInput {
   const equipment = (data.ArmoryEquipment ?? []).map((item) => ({
     ...item,
     parsed: parseTooltip(item.Tooltip),
-    text: plainText(item.Tooltip ?? ""),
   }));
   const find = (type: string) => equipment.find((item) => item.Type === type);
   const weapon = find("무기");
   const bracelet = find("팔찌");
   const stone = find("어빌리티 스톤");
   const evolution = weapon ? honing(weapon.Name) : null;
-  const ella = numeric(weapon?.text.match(/엘라\s*([123])\s*단계/)?.[1]);
+  const ella = numeric(
+    plainText(weapon?.Tooltip ?? "").match(/엘라\s*([123])\s*단계/)?.[1],
+  );
   const indices = { 목걸이: 0, 귀걸이: 0, 반지: 0 };
   const effects = data.ArmoryEngraving?.ArkPassiveEffects ?? [];
   const fallback = effects
@@ -48,12 +48,9 @@ export function extractTransferInput(data: Armory): TransferInput {
             {
               part: part as OldPart,
               name: item.Name,
-              icon: item.Icon,
               grade: item.Grade,
               itemLevel: numeric(item.parsed?.itemLevel),
               honing: honing(item.Name),
-              advanced: item.parsed?.advanced ?? null,
-              quality: item.parsed?.quality ?? null,
             },
           ]
         : [];
@@ -82,9 +79,6 @@ export function extractTransferInput(data: Armory): TransferInput {
           quality: item.parsed?.quality ?? null,
           tier: item.parsed?.tier ?? null,
           options: item.parsed?.options ?? null,
-          tradeCount: numeric(
-            item.text.match(/거래 가능 횟수\s*[:：]?\s*(\d+)/)?.[1],
-          ),
         },
       ];
     }),
@@ -105,18 +99,5 @@ export function extractTransferInput(data: Armory): TransferInput {
                 : stoneEngravings,
         }
       : null,
-    gems: (data.ArmoryGem?.Gems ?? []).map((gem) => ({
-      slot: gem.Slot,
-      level: gem.Level,
-      tier: parseTooltip(gem.Tooltip)?.tier ?? null,
-      kind:
-        Object.keys(GEM_KIND_TIER).find((kind) => gem.Name.includes(kind)) ??
-        null,
-      bound: /거래 불가|귀속/.test(plainText(gem.Tooltip ?? "")) ? true : null,
-    })),
-    karma: (data.ArkPassive?.Points ?? []).map((point) => ({
-      name: point.Name,
-      level: numeric(point.Description?.match(/(\d+)\s*레벨/)?.[1]),
-    })),
   };
 }

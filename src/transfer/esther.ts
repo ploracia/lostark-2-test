@@ -52,8 +52,6 @@ export function convertEsther(before: EstherIn): EstherResult {
     ella: field(rows.map(([, row]) => row[1])),
     polish: field(rows.map(([, row]) => row[2])),
     honing: field(rows.map(([, row]) => row[4])),
-    energy: field(rows.map(([, row]) => row[5])),
-    kit: field(rows.map(([, row]) => row[6])),
     linkedLevel:
       !linked.length || linkedValues.length !== linked.length
         ? unknown(linkedSource)

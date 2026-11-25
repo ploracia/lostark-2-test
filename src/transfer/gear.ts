@@ -8,7 +8,6 @@ import type {
   NewSlot,
   NewSlotResult,
   OldPart,
-  TransferOverrides,
 } from "./types";
 
 const source = "공지 표1";
@@ -32,10 +31,8 @@ function result(
   from: OldPart,
   map: ReturnType<typeof mapGear>,
   honing: Est<number> | undefined,
-  ov: TransferOverrides,
 ): NewSlotResult {
   const mapped = map.kind === "value" ? map.value : null;
-  const energy = ov.artisanEnergy?.[from];
   return {
     slot,
     from,
@@ -46,10 +43,6 @@ function result(
       ? official(mapped.itemLevel, source)
       : unknown(source, "계산 불가", map.evidence.note),
     slotHoning: honing,
-    artisanEnergy:
-      honing && energy !== undefined
-        ? official(energy, "사용자 입력 · 장인의 기운 유지")
-        : undefined,
     isNew: NEW_SLOTS.some((name) => name === slot),
   };
 }
@@ -63,29 +56,21 @@ export function convertArmor(
   part: Exclude<OldPart, "무기">,
   right: NewSlot,
   gear: GearIn | undefined,
-  ov: TransferOverrides,
 ) {
-  const mapped = mapGear(higher(gear?.itemLevel, ov.gearItemLevel?.[part]));
+  const mapped = mapGear(gear?.itemLevel ?? null);
   return [
-    result(part, part, mapped, slotHoning(gear?.honing), ov),
-    result(right, part, mapped, undefined, ov),
+    result(part, part, mapped, slotHoning(gear?.honing)),
+    result(right, part, mapped, undefined),
   ];
-}
-function higher(a?: number | null, b?: number | null) {
-  if (a == null) return b ?? null;
-  return b == null ? a : Math.max(a, b);
 }
 
 export function convertWeapon(
   weapon: GearIn | undefined,
   esther: EstherResult | null,
   vambrace: number | null | undefined,
-  ov: TransferOverrides,
 ) {
-  const normalLevel = higher(
-    weapon?.grade === "에스더" ? null : weapon?.itemLevel,
-    ov.gearItemLevel?.무기,
-  );
+  const normalLevel =
+    weapon?.grade === "에스더" ? null : (weapon?.itemLevel ?? null);
   const estherLevel = esther?.before.itemLevel;
   const useEsther =
     esther &&
@@ -104,7 +89,6 @@ export function convertWeapon(
     "무기",
     normalMap,
     slotHoning(weapon?.grade === "에스더" ? null : weapon?.honing),
-    ov,
   );
   if (useEsther) {
     Object.assign(weaponSlot, {
@@ -122,11 +106,10 @@ export function convertWeapon(
       "무기",
       normalMap,
       slot === "완갑"
-        ? slotHoning(ov.vambraceHoning ?? vambrace)
+        ? slotHoning(vambrace)
         : slot === "허리띠"
           ? slotHoning(0)
           : undefined,
-      ov,
     );
     if (useEsther) {
       entry.itemLevel = esther.linkedLevel;
