@@ -103,6 +103,53 @@ describe("MSW transport", () => {
   });
 });
 
+describe("first visit onboarding", () => {
+  it("opens key settings from the home page", () => {
+    go("", false);
+    expect(
+      screen.getByRole("heading", { name: "로스트아크 API 키 등록" }),
+    ).toBeTruthy();
+    expect(location.hash).toBe("#/settings/key");
+    expect(screen.queryByRole("searchbox")).toBeNull();
+  });
+
+  it.each([hash, hash.slice(1)])(
+    "returns to the exact character URL from %s after validation",
+    async (route) => {
+      const originalUrl = route.startsWith("#")
+        ? "/" + route + "?tab=gems#detail"
+        : route + "?tab=gems#detail";
+      const armoryRequest = vi.fn(() => HttpResponse.json(armory));
+      server.use(
+        http.get(API_BASE + "/news/alarms", () => HttpResponse.json([])),
+        http.get(endpoint, armoryRequest),
+      );
+      history.replaceState(null, "", originalUrl);
+      render(<ArkLens />);
+      expect(
+        screen.getByRole("heading", { name: "로스트아크 API 키 등록" }),
+      ).toBeTruthy();
+      expect(location.pathname + location.hash).toBe(
+        route.startsWith("#") ? "/#/settings/key" : "/settings/key",
+      );
+      expect(armoryRequest).not.toHaveBeenCalled();
+      fireEvent.change(screen.getByLabelText("API 키", { selector: "input" }), {
+        target: { value: "Bearer <" + token + ">" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "검증 후 저장" }));
+      expect(
+        await screen.findByRole("heading", { name: /은하수바리케이드/ }),
+      ).toBeTruthy();
+      expect(location.pathname + location.search + location.hash).toBe(
+        originalUrl,
+      );
+      expect(screen.getByRole("status").textContent).toMatch(
+        /검증 성공.*…alue/,
+      );
+    },
+  );
+});
+
 describe("character views with MSW", () => {
   it.each([
     [401, "API 키가 거부되었습니다"],
@@ -128,26 +175,6 @@ describe("character views with MSW", () => {
       countdown: Boolean(alert.querySelector("progress")),
     }).toMatchSnapshot();
     if (status === 401) expect(getKey()?.value.status).toBe("rejected");
-  });
-  it("preserves a share link without a key and returns to it after validation", async () => {
-    server.use(
-      http.get(API_BASE + "/news/alarms", () => HttpResponse.json([])),
-      http.get(endpoint, () => HttpResponse.json(armory)),
-    );
-    go(hash, false);
-    expect(
-      screen.getByRole("heading", { name: "API 키가 필요합니다" }),
-    ).toBeTruthy();
-    expect(location.hash).toBe(hash);
-    fireEvent.click(screen.getByRole("link", { name: "키 등록하기" }));
-    fireEvent.change(screen.getByLabelText("API 키", { selector: "input" }), {
-      target: { value: "Bearer <" + token + ">" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "검증 후 저장" }));
-    expect(
-      await screen.findByRole("heading", { name: /은하수바리케이드/ }),
-    ).toBeTruthy();
-    expect(screen.getByRole("status").textContent).toMatch(/검증 성공.*…alue/);
   });
   it("defers siblings, reuses cached results and switches equipment tabs with the keyboard", async () => {
     let armoryCalls = 0;

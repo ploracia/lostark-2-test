@@ -19,7 +19,7 @@ export default function KeySettings() {
   const location = useLocation();
   const returnTo =
     typeof location.state?.returnTo === "string" &&
-    location.state.returnTo.startsWith("/c/")
+    /^\/(?![/\\])/.test(location.state.returnTo)
       ? location.state.returnTo
       : "/";
   const [input, setInput] = useState("");
@@ -128,6 +128,34 @@ export default function KeySettings() {
           캐릭터를 조회하려면 로스트아크 개발자 포털에서 발급한 API 키가
           필요합니다.
         </p>
+        <section className="key-guide" aria-labelledby="key-guide-title">
+          <h2 id="key-guide-title">API 키 발급 방법</h2>
+          <a
+            className="btn"
+            href={PORTAL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            로스트아크 개발자 포털 열기 ↗
+          </a>
+          <ol className="steps">
+            <li>포털에서 STOVE 계정으로 로그인합니다.</li>
+            <li>
+              <strong>GET ACCESS TO LOSTARK API</strong> 또는{" "}
+              <strong>MY CLIENTS</strong>에서 클라이언트를 생성합니다. 계정당
+              최대 5개까지 만들 수 있습니다.
+            </li>
+            <li>발급된 API KEY(JWT)를 복사합니다.</li>
+            <li>
+              아래에 붙여넣고 <strong>검증 후 저장</strong>을 누릅니다.
+            </li>
+          </ol>
+          <p>
+            키는 이 브라우저에만 저장합니다. 기본 연결은 로스트아크 Open API에
+            직접 요청하며, 이 사이트 서버로 키를 보내지 않습니다. 공용 PC에서는{" "}
+            <strong>이번 탭에서만</strong>을 권장합니다.
+          </p>
+        </section>
         <form
           className="key-form"
           onSubmit={(event) => {
@@ -285,21 +313,6 @@ export default function KeySettings() {
           )}
         </form>
       </section>
-      <Card title="키 발급 방법">
-        <ol className="steps">
-          <li>
-            <a href={PORTAL} target="_blank" rel="noopener noreferrer">
-              로스트아크 개발자 포털 ↗
-            </a>
-            에 로그인합니다.
-          </li>
-          <li>클라이언트를 생성합니다. 계정당 최대 5개를 만들 수 있습니다.</li>
-          <li>
-            API KEY를 복사합니다. 키는 무기한 유효하며 클라이언트를 삭제하면
-            무효가 됩니다.
-          </li>
-        </ol>
-      </Card>
       <Card title="보안 안내">
         <div className="notice warn">
           <span>

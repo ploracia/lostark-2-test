@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  BrowserRouter,
+  createPath,
   HashRouter,
   Link,
   Navigate,
@@ -90,10 +92,20 @@ function TopBar({
 }) {
   const { key, proxyActive, disableProxy } = useSession();
   const now = useClock();
+  if (!key)
+    return (
+      <header className="topbar">
+        <span className="logo">
+          <i aria-hidden="true" />
+          <b>Ark Lens</b>
+        </span>
+        <span className="spacer" />
+        <ThemeToggle />
+      </header>
+    );
   const rate = rateGate.snapshot(now);
-  const status = !key
-    ? "키 없음"
-    : key.value.status === "rejected"
+  const status =
+    key.value.status === "rejected"
       ? "키 거부됨"
       : key.value.status === "unverified"
         ? "미검증 키"
@@ -133,9 +145,9 @@ function TopBar({
         <span
           className={
             "dot " +
-            (key?.value.status === "rejected"
+            (key.value.status === "rejected"
               ? "bad"
-              : key?.value.status !== "ok"
+              : key.value.status !== "ok"
                 ? "off"
                 : "")
           }
@@ -192,6 +204,14 @@ function App() {
     /* Preserve malformed input as text. */
   }
   const settings = location.pathname === "/settings/key";
+  if (!key && !settings)
+    return (
+      <Navigate
+        to="/settings/key"
+        replace
+        state={{ returnTo: createPath(location) }}
+      />
+    );
   function search(value: string) {
     setRecent(
       [value, ...recent.filter((entry) => entry !== value)].slice(0, 10),
@@ -224,8 +244,8 @@ function App() {
             }
             onSearch={search}
           />
-        ) : location.pathname !== "/" || !key ? (
-          <Navigate to={key ? "/" : "/settings/key"} replace />
+        ) : location.pathname !== "/" ? (
+          <Navigate to="/" replace />
         ) : (
           <div className="card empty-home">
             <h1>로스트아크 캐릭터 조회</h1>
@@ -240,13 +260,17 @@ function App() {
 }
 
 export function ArkLens() {
+  // Keep existing hash links and support direct paths served by the SPA fallback.
+  const [Router] = useState(() =>
+    window.location.pathname === "/" ? HashRouter : BrowserRouter,
+  );
   return (
     <QueryClientProvider client={queryClient}>
-      <HashRouter>
+      <Router>
         <SessionProvider>
           <App />
         </SessionProvider>
-      </HashRouter>
+      </Router>
     </QueryClientProvider>
   );
 }

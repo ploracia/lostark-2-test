@@ -68,6 +68,22 @@ button:disabled {
   display: grid;
   gap: 16px;
 }
+.key-guide {
+  margin: 16px 0 20px;
+  padding: 16px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+.key-guide h2 {
+  margin: 0 0 10px;
+}
+.key-guide .btn {
+  display: inline-flex;
+}
+.key-guide p {
+  margin: 12px 0 0;
+}
 .key-form fieldset {
   border: 0;
   margin: 0;
