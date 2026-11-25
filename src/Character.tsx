@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { armoryPath, PORTAL, type ApiError } from "./api";
 import type { Sibling } from "./models";
@@ -273,15 +273,15 @@ export default function Character({
   recent,
   favorite,
   toggleFavorite,
-  onSearch,
 }: {
   name: string;
   recent: string[];
   favorite: boolean;
   toggleFavorite: () => void;
-  onSearch: (name: string) => void;
 }) {
-  const { key } = useSession();
+  const { key, recordRecent } = useSession();
+  const location = useLocation();
+  const recorded = useRef<string>();
   const now = useClock();
   const [drawer, setDrawer] = useState(false);
   const [cancelled, setCancelled] = useState(false);
@@ -301,6 +301,24 @@ export default function Character({
       : query.error;
   const reset = error?.kind === "rate-limited" ? error.resetAt : null;
   const { refetch, isFetching } = query;
+  const profile = query.data?.ArmoryProfile;
+  const lookupSucceeded = !error && query.isSuccess && !isFetching;
+
+  useEffect(() => {
+    if (
+      !lookupSucceeded ||
+      !profile?.CharacterName ||
+      recorded.current === location.key
+    )
+      return;
+    recorded.current = location.key;
+    recordRecent({
+      name: profile.CharacterName,
+      server: profile.ServerName,
+      job: profile.CharacterClassName,
+      level: profile.ItemAvgLevel,
+    });
+  }, [lookupSucceeded, location.key, profile, recordRecent]);
 
   useEffect(() => {
     if (reset === null || cancelled || automatic.current || isFetching) return;
@@ -443,10 +461,7 @@ export default function Character({
           name={name}
           returnFocus={drawerTrigger.current}
           close={() => setDrawer(false)}
-          select={(next) => {
-            onSearch(next);
-            nav(characterUrl(next));
-          }}
+          select={(next) => nav(characterUrl(next))}
         />
       )}
     </>

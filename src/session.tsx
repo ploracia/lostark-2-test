@@ -27,6 +27,7 @@ import {
   type StoredKey,
 } from "./storage";
 import type { Armory, Sibling } from "./models";
+import { RECENT, RECENT_LIMIT, readRecent, type RecentSearch } from "./recent";
 
 export const TTL = 180_000;
 /** Expedition rosters change rarely (guide §5.3: 10–30 min). */
@@ -41,6 +42,9 @@ export const clearNotFound = () => notFound.clear();
 type Cached = { at: number; keySavedAt: string; data: unknown };
 type Session = {
   key: ReturnType<typeof getKey>;
+  recent: RecentSearch[];
+  recordRecent: (entry: RecentSearch) => void;
+  deleteRecent: (name?: string) => void;
   demo: boolean;
   proxyActive: boolean;
   allowProxy: () => boolean;
@@ -85,6 +89,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         };
   });
   const client = useQueryClient();
+  const [recent, setRecent] = useState(() =>
+    key ? readRecent(key.scope) : [],
+  );
   const proxy = useRef(false);
   const [proxyActive, setProxyActive] = useState(false);
 
@@ -112,6 +119,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (demo) return;
     function sync(event: StorageEvent) {
+      if (event.key === RECENT && key?.scope === "local") {
+        setRecent(readRecent(key.scope));
+        return;
+      }
       if (event.key !== null && event.key !== KEY) return;
       const next = getKey();
       if (next?.value.token !== key?.value.token) {
@@ -120,6 +131,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         rateGate.reset();
         write("session", CACHE, undefined);
       }
+      if (event.key === null || next?.scope !== key?.scope)
+        setRecent(next ? readRecent(next.scope) : []);
       setKey(next);
     }
     window.addEventListener("storage", sync);
@@ -136,16 +149,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   function store(scope: Scope, value: StoredKey) {
     if (!demo && !saveKey(scope, value)) return false;
     if (key?.value.token !== value.token) resetQueries(false);
+    if (scope !== key?.scope) setRecent(readRecent(scope));
     setKey({ scope, value });
     return true;
   }
 
   function remove() {
     const success = demo || deleteKey();
+    const clearedLocal = write("local", RECENT, undefined);
+    const clearedSession = write("session", RECENT, undefined);
+    setRecent([]);
     disableProxy();
     resetQueries();
     setKey(demo ? null : getKey());
-    return success;
+    return success && clearedLocal && clearedSession;
+  }
+
+  function updateRecent(next: RecentSearch[]) {
+    if (!key) return;
+    write(key.scope, RECENT, next.length ? next : undefined);
+    setRecent(next);
   }
 
   async function request<T>(
@@ -198,6 +221,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     <SessionContext.Provider
       value={{
         key,
+        recent,
+        recordRecent: (entry) =>
+          updateRecent(
+            [entry, ...recent.filter(({ name }) => name !== entry.name)].slice(
+              0,
+              RECENT_LIMIT,
+            ),
+          ),
+        deleteRecent: (name) =>
+          updateRecent(
+            name ? recent.filter((entry) => entry.name !== name) : [],
+          ),
         demo,
         request,
         store,

@@ -258,7 +258,11 @@ export default function KeySettings() {
               type="button"
               disabled={pending || !key}
               onClick={() => {
-                if (!window.confirm("저장된 API 키와 캐시를 삭제할까요?"))
+                if (
+                  !window.confirm(
+                    "저장된 API 키와 조회 캐시, 최근 검색 기록을 모두 삭제할까요?",
+                  )
+                )
                   return;
                 const success = remove();
                 setInput("");
@@ -267,7 +271,7 @@ export default function KeySettings() {
                   success
                     ? {
                         style: "ok",
-                        text: "저장된 키와 조회 캐시를 삭제했습니다.",
+                        text: "저장된 키와 조회 캐시, 최근 검색 기록을 삭제했습니다.",
                       }
                     : {
                         style: "err",

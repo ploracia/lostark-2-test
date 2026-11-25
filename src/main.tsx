@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -13,6 +13,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { rateGate } from "./api";
 import Character, { characterUrl } from "./Character";
 import KeySettings from "./KeySettings";
+import { RecentSearches } from "./RecentSearches";
 import { queryClient, SessionProvider, useSession } from "./session";
 import { maskKey } from "./storage";
 import { ThemeToggle, useClock, useNames } from "./ui";
@@ -20,18 +21,14 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/app.css";
 
-function SearchBox({
-  name,
-  onSearch,
-  large = false,
-}: {
-  name: string;
-  onSearch: (name: string) => void;
-  large?: boolean;
-}) {
+function SearchBox({ name, large = false }: { name: string; large?: boolean }) {
   const [input, setInput] = useState(name);
+  const [open, setOpen] = useState(false);
+  const popupId = useId();
   const ref = useRef<HTMLInputElement>(null);
+  const { recent } = useSession();
   const navigate = useNavigate();
+  const expanded = open && recent.length > 0;
   useEffect(() => {
     if (large) return;
     function shortcut(event: KeyboardEvent) {
@@ -58,12 +55,38 @@ function SearchBox({
       className={"search" + (large ? " search-large" : "")}
       role="search"
       aria-label={large ? "본문 캐릭터 검색" : "상단 캐릭터 검색"}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.nativeEvent.isComposing) return;
+        if (event.key === "Escape" && expanded) {
+          event.preventDefault();
+          ref.current?.focus();
+          setOpen(false);
+        }
+        if (!expanded || (event.key !== "ArrowDown" && event.key !== "ArrowUp"))
+          return;
+        const links = Array.from(
+          event.currentTarget.querySelectorAll<HTMLAnchorElement>(
+            "[data-recent-link]",
+          ),
+        );
+        const current = links.findIndex((link) => link === event.target);
+        const next =
+          event.key === "ArrowDown"
+            ? (current + 1) % links.length
+            : (current < 0 ? links.length - 1 : current - 1 + links.length) %
+              links.length;
+        event.preventDefault();
+        links[next]?.focus();
+      }}
       onSubmit={(event) => {
         event.preventDefault();
         const value = input.trim();
         if (!value) return;
         setInput(value);
-        onSearch(value);
+        setOpen(false);
         navigate(characterUrl(value));
       }}
     >
@@ -71,7 +94,13 @@ function SearchBox({
         type="search"
         ref={ref}
         value={input}
-        onChange={(event) => setInput(event.target.value)}
+        onChange={(event) => {
+          setInput(event.target.value);
+          setOpen(false);
+        }}
+        onFocus={() => setOpen(true)}
+        onClick={() => setOpen(true)}
+        aria-controls={expanded ? popupId : undefined}
         placeholder="캐릭터 이름을 입력하세요"
         aria-label="캐릭터 이름"
       />
@@ -79,17 +108,18 @@ function SearchBox({
       <button className="btn primary" disabled={!input.trim()}>
         검색
       </button>
+      {expanded && (
+        <RecentSearches
+          id={popupId}
+          close={() => setOpen(false)}
+          returnFocus={() => ref.current?.focus()}
+        />
+      )}
     </form>
   );
 }
 
-function TopBar({
-  name,
-  onSearch,
-}: {
-  name: string;
-  onSearch: (name: string) => void;
-}) {
+function TopBar({ name }: { name: string }) {
   const { key, proxyActive, disableProxy } = useSession();
   const now = useClock();
   if (!key)
@@ -116,7 +146,7 @@ function TopBar({
         <i aria-hidden="true" />
         <b>Ark Lens</b>
       </Link>
-      <SearchBox key={name} name={name} onSearch={onSearch} />
+      <SearchBox key={name} name={name} />
       <span className="spacer" />
       {proxyActive && (
         <button className="chip" onClick={disableProxy}>
@@ -159,27 +189,14 @@ function TopBar({
   );
 }
 
-function NameList({
-  title,
-  names,
-  onSearch,
-}: {
-  title: string;
-  names: string[];
-  onSearch: (name: string) => void;
-}) {
+function Favorites({ names }: { names: string[] }) {
   return (
     <section>
-      <h2>{title}</h2>
+      <h2>즐겨찾기</h2>
       <div className="actions">
         {names.length ? (
           names.map((name) => (
-            <Link
-              className="chip"
-              key={name}
-              to={characterUrl(name)}
-              onClick={() => onSearch(name)}
-            >
+            <Link className="chip" key={name} to={characterUrl(name)}>
               {name}
             </Link>
           ))
@@ -193,8 +210,7 @@ function NameList({
 
 function App() {
   const location = useLocation();
-  const { key, demo } = useSession();
-  const [recent, setRecent] = useNames("recent");
+  const { key, demo, recent } = useSession();
   const [favorites, setFavorites] = useNames("favorites");
   const match = location.pathname.match(/^\/c\/([^/]+)\/?$/);
   let name = match?.[1] ?? "";
@@ -212,14 +228,9 @@ function App() {
         state={{ returnTo: createPath(location) }}
       />
     );
-  function search(value: string) {
-    setRecent(
-      [value, ...recent.filter((entry) => entry !== value)].slice(0, 10),
-    );
-  }
   return (
     <>
-      <TopBar name={name} onSearch={search} />
+      <TopBar name={name} />
       <main>
         {demo && <p className="demo-label small muted">데모 · 가상 데이터</p>}
         {typeof location.state?.keyNotice === "string" && (
@@ -233,7 +244,7 @@ function App() {
           <Character
             key={name}
             name={name}
-            recent={recent}
+            recent={recent.map((entry) => entry.name)}
             favorite={favorites.includes(name)}
             toggleFavorite={() =>
               setFavorites(
@@ -242,16 +253,15 @@ function App() {
                   : [name, ...favorites],
               )
             }
-            onSearch={search}
           />
         ) : location.pathname !== "/" ? (
           <Navigate to="/" replace />
         ) : (
           <div className="card empty-home">
             <h1>로스트아크 캐릭터 조회</h1>
-            <SearchBox name="" onSearch={search} large />
-            <NameList title="최근 검색" names={recent} onSearch={search} />
-            <NameList title="즐겨찾기" names={favorites} onSearch={search} />
+            <SearchBox name="" large />
+            <RecentSearches />
+            <Favorites names={favorites} />
           </div>
         )}
       </main>

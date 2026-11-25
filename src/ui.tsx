@@ -45,7 +45,7 @@ export function ThemeToggle() {
   );
 }
 
-export function useNames(key: "recent" | "favorites") {
+export function useNames(key: "favorites") {
   const storageKey = "arklens." + key + ".v1";
   const [names, setNames] = useState<string[]>(() => {
     const saved = read<unknown>("local", storageKey, []);

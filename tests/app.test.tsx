@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { delay, http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -28,6 +29,7 @@ import {
   rateGate,
 } from "../src/api";
 import { ArkLens } from "../src/main";
+import { RECENT, readRecent } from "../src/recent";
 import { clearNotFound, queryClient, writeCache } from "../src/session";
 import { getKey, saveKey } from "../src/storage";
 
@@ -62,6 +64,112 @@ function go(path = hash, withKey = true) {
   history.replaceState(null, "", "/" + path);
   return render(<ArkLens />);
 }
+
+describe("recent searches", () => {
+  function mockCharacters() {
+    server.use(
+      http.get(endpoint, ({ params }) =>
+        params.name === "없는캐릭터"
+          ? HttpResponse.json({ ArmoryProfile: null })
+          : HttpResponse.json({
+              ...armory,
+              ArmoryProfile: {
+                ...armory.ArmoryProfile,
+                CharacterName: params.name,
+              },
+            }),
+      ),
+    );
+  }
+
+  function search(value: string) {
+    const form = screen.getByRole("search", { name: "상단 캐릭터 검색" });
+    fireEvent.change(within(form).getByRole("searchbox"), {
+      target: { value },
+    });
+    fireEvent.submit(form);
+  }
+
+  it("keeps five successful lookups, moves repeats up, and skips misses", async () => {
+    mockCharacters();
+    go("");
+    const names = ["하나", "둘", "셋", "넷", "다섯", "여섯"];
+    for (const value of [...names, "셋"]) {
+      search(value);
+      await waitFor(() => expect(readRecent("local")[0]?.name).toBe(value));
+    }
+    expect(readRecent("local").map((entry) => entry.name)).toEqual([
+      "셋",
+      "여섯",
+      "다섯",
+      "넷",
+      "둘",
+    ]);
+    expect(readRecent("local")[0]).toMatchObject({
+      server: armory.ArmoryProfile.ServerName,
+      job: armory.ArmoryProfile.CharacterClassName,
+      level: armory.ArmoryProfile.ItemAvgLevel,
+    });
+    search("없는캐릭터");
+    await screen.findByRole("heading", { name: /캐릭터를 찾을 수 없습니다/ });
+    expect(readRecent("local").map((entry) => entry.name)).not.toContain(
+      "없는캐릭터",
+    );
+  });
+
+  it("loads legacy names, supports keyboard focus, and deletes one or all chips", () => {
+    localStorage.setItem(RECENT, JSON.stringify(["하나", "둘", "하나"]));
+    go("");
+    const form = screen.getByRole("search", { name: "상단 캐릭터 검색" });
+    const input = within(form).getByRole("searchbox");
+    act(() => input.focus());
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    const first = within(form).getByRole("link", { name: "하나" });
+    const second = within(form).getByRole("link", { name: "둘" });
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(first, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(second);
+    fireEvent.keyDown(second, { key: "Escape" });
+    expect(document.activeElement).toBe(input);
+    expect(within(form).queryByRole("link", { name: "둘" })).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "하나 검색 기록 삭제" }),
+    );
+    expect(readRecent("local").map((entry) => entry.name)).toEqual(["둘"]);
+    fireEvent.click(screen.getByRole("button", { name: "전체 지우기" }));
+    expect(localStorage.getItem(RECENT)).toBeNull();
+    expect(screen.queryByRole("link", { name: "둘" })).toBeNull();
+  });
+
+  it("keeps tab-only searches in session storage and clears both histories with the key", async () => {
+    saveKey("session", {
+      token,
+      savedAt: new Date().toISOString(),
+      status: "ok",
+    });
+    const legacy = JSON.stringify(["브라우저기록"]);
+    localStorage.setItem(RECENT, legacy);
+    mockCharacters();
+    go("", false);
+    expect(screen.queryByRole("link", { name: "브라우저기록" })).toBeNull();
+    search(name);
+    await waitFor(() => expect(readRecent("session")[0]?.name).toBe(name));
+    expect(localStorage.getItem(RECENT)).toBe(legacy);
+    fireEvent.click(screen.getByRole("link", { name: /키 …/ }));
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    try {
+      fireEvent.click(screen.getByRole("button", { name: "키 삭제" }));
+      expect(confirm).toHaveBeenCalledWith(
+        expect.stringContaining("최근 검색 기록"),
+      );
+      expect(sessionStorage.getItem(RECENT)).toBeNull();
+      expect(localStorage.getItem(RECENT)).toBeNull();
+    } finally {
+      confirm.mockRestore();
+    }
+  });
+});
 
 describe("MSW transport", () => {
   it("requests the encoded name and raw filters with the key in a header", async () => {
