@@ -50,9 +50,11 @@ export async function lostark<T>(
     });
   } catch (error) {
     signal?.throwIfAborted();
-    if (error instanceof TypeError)
-      throw { kind: "network" } satisfies ApiError;
-    throw error;
+    // Only aborts pass through. Any other transport failure must become an
+    // ApiError so the UI can look its kind up in errorContent.
+    if ((error as { name?: unknown } | null)?.name === "AbortError")
+      throw error;
+    throw { kind: "network" } satisfies ApiError;
   }
   const reset = rateGate.observe(response.headers);
   if (!response.ok) {

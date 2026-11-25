@@ -218,6 +218,25 @@ describe("MSW transport", () => {
       kind,
     });
   });
+  it.each([
+    new Error("simulated transport failure"),
+    new DOMException("simulated security failure", "SecurityError"),
+    "simulated non-error rejection",
+  ])(
+    "maps a non-TypeError transport failure to network (%#)",
+    async (cause) => {
+      const request = () => Promise.reject(cause);
+      await expect(
+        lostark(armoryPath(name), token, undefined, request),
+      ).rejects.toEqual({ kind: "network" });
+    },
+  );
+  it("keeps an AbortError from the transport as an abort", async () => {
+    const abort = new DOMException("simulated abort", "AbortError");
+    await expect(
+      lostark(armoryPath(name), token, undefined, () => Promise.reject(abort)),
+    ).rejects.toBe(abort);
+  });
   it("propagates abort without classifying it as a network error", async () => {
     server.use(
       http.get(endpoint, async () => {

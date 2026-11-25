@@ -16,11 +16,20 @@
    npx wrangler pages project create mokokoloa --production-branch main
    ```
 
-4. 다음 명령을 실행합니다. `--branch`는 위에서 지정한 프로덕션 브랜치와 일치시킵니다. Wrangler가 계정을 선택하라고 하면 프로젝트를 만든 계정을 선택합니다.
+   Wrangler 4.168은 AI 코딩 에이전트가 실행했다고 판단하면 새 Pages 프로젝트 생성·배포를 Workers 정적 자산 배포로 넘깁니다. 에이전트나 자동화 도구에서 실행해 위임 안내가 나오면 `--force`를 붙여 Pages 프로젝트로 만듭니다. 프로젝트가 생긴 뒤의 명령에는 `--force`가 필요 없습니다.
 
    ```sh
-   npm run deploy -- --branch main
+   npx wrangler pages project create mokokoloa --production-branch main --force
    ```
+
+4. 빌드한 뒤 `dist`를 배포합니다. `--branch`는 위에서 지정한 프로덕션 브랜치와 일치시킵니다. Wrangler가 계정을 선택하라고 하면 프로젝트를 만든 계정을 선택합니다.
+
+   ```sh
+   npm run build
+   npx wrangler pages deploy dist --project-name mokokoloa --branch main
+   ```
+
+   bash 같은 POSIX 셸에서는 `npm run deploy -- --branch main`으로 같은 일을 할 수 있습니다. Windows PowerShell 5.1에서는 `npm`이 PowerShell 스크립트로 실행되면서 `--`가 사라지고 `--branch`가 npm 옵션으로 해석되므로, 위처럼 Wrangler를 직접 실행합니다.
 
 5. 출력된 프로덕션 URL을 열고 `/#/settings/key`에서 새로고침합니다. 키 등록 화면이 정상적으로 표시되는지 확인합니다. `HashRouter`는 URL의 `#` 뒤를 브라우저에서 처리합니다. 최상위 `404.html` 없이 Pages의 기본 SPA 설정을 사용하며 빌드 자산은 루트에서 로드합니다. [Cloudflare Pages SPA 동작](https://developers.cloudflare.com/pages/configuration/serving-pages/#single-page-application-spa-rendering)
 
@@ -31,8 +40,10 @@
 새 앱을 `https://mokokoloa.pages.dev`에 먼저 배포하고 키 등록 화면과 해시 경로가 열리는지 확인합니다. 프록시를 사용할 경우 아래 Worker 배포와 새 앱 연결까지 마친 뒤, 기존 `ark-lens` 프로젝트에 리다이렉트 전용 정적 파일을 배포합니다.
 
 ```sh
-npm run deploy:redirect -- --branch main
+npx wrangler pages deploy redirect/ark-lens --project-name ark-lens --branch main
 ```
+
+`--project-name`이 루트 `wrangler.toml`의 `name`보다 우선합니다. POSIX 셸에서는 `npm run deploy:redirect -- --branch main`도 같습니다.
 
 기존 주소의 루트는 HTML 리다이렉트에서 쿼리와 해시를 유지합니다. 직접 경로는 Pages의 301로 새 도메인의 `/_from-ark-lens/` 경로를 거치고, 새 앱은 원래 경로와 함께 `from=ark-lens`를 표시합니다. 원래 쿼리를 유지하기 위해 301 규칙의 목적지에는 쿼리를 넣지 않습니다. [Cloudflare Pages 리다이렉트](https://developers.cloudflare.com/pages/configuration/redirects/)
 
@@ -56,7 +67,8 @@ npm run deploy:redirect -- --branch main
    ```
 
    ```sh
-   npm run deploy -- --branch main
+   npm run build
+   npx wrangler pages deploy dist --project-name mokokoloa --branch main
    ```
 
 4. 앱은 직접 호출로 시작합니다. 연결 오류가 발생하면 **프록시로 재시도**가 표시됩니다. 확인창에서 Worker origin을 확인하고 동의하면 열린 페이지에서 프록시를 사용합니다. **프록시 끄기** 또는 새로고침으로 직접 호출로 돌아갑니다. 프록시 옵션을 배포에서 제거하려면 `VITE_PROXY_URL`을 지우고 다시 빌드·배포합니다.
