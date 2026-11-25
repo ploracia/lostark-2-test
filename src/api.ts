@@ -1,6 +1,9 @@
 import { RateGate } from "./rateGate";
+import { API_BASE } from "./api-origin";
+import { parseProxyOrigin } from "./proxy-url";
 
-export const API_BASE = "https://developer-lostark.game.onstove.com";
+export { API_BASE };
+export const PROXY_ORIGIN = parseProxyOrigin(import.meta.env.VITE_PROXY_URL);
 export const PORTAL = API_BASE + "/";
 export const ALARMS_PATH = "/news/alarms";
 export const ARMORY_FILTERS =
@@ -27,6 +30,7 @@ export async function lostark<T>(
   token?: string,
   signal?: AbortSignal,
   request: typeof fetch = fetch,
+  proxyOrigin?: string,
 ): Promise<T> {
   signal?.throwIfAborted();
   if (!token) throw { kind: "no-key" } satisfies ApiError;
@@ -35,12 +39,14 @@ export async function lostark<T>(
     throw { kind: "rate-limited", resetAt: waitUntil } satisfies ApiError;
   let response: Response;
   try {
-    response = await request(API_BASE + path, {
+    response = await request((proxyOrigin ?? API_BASE) + path, {
       signal,
       redirect: "error",
       cache: "no-store",
       credentials: "omit",
-      headers: { accept: "application/json", authorization: "bearer " + token },
+      headers: proxyOrigin
+        ? { accept: "application/json", "x-lostark-key": token }
+        : { accept: "application/json", authorization: "bearer " + token },
     });
   } catch (error) {
     signal?.throwIfAborted();

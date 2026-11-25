@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -11,6 +12,7 @@ import {
   armoryPath,
   siblingsPath,
   lostark,
+  PROXY_ORIGIN,
   rateGate,
   type ApiError,
 } from "./api";
@@ -40,6 +42,9 @@ type Cached = { at: number; keySavedAt: string; data: unknown };
 type Session = {
   key: ReturnType<typeof getKey>;
   demo: boolean;
+  proxyActive: boolean;
+  allowProxy: () => boolean;
+  disableProxy: () => void;
   request: <T>(
     path: string,
     signal?: AbortSignal,
@@ -80,6 +85,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         };
   });
   const client = useQueryClient();
+  const proxy = useRef(false);
+  const [proxyActive, setProxyActive] = useState(false);
+
+  function allowProxy() {
+    if (!PROXY_ORIGIN || demo) return false;
+    if (proxy.current) return true;
+    if (
+      !window.confirm(
+        "API 키와 조회 요청이 " +
+          PROXY_ORIGIN +
+          " 서버를 거칩니다. 이 탭을 새로고침할 때까지 프록시를 사용하시겠어요?",
+      )
+    )
+      return false;
+    proxy.current = true;
+    setProxyActive(true);
+    return true;
+  }
+
+  function disableProxy() {
+    proxy.current = false;
+    setProxyActive(false);
+  }
 
   useEffect(() => {
     if (demo) return;
@@ -114,6 +142,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   function remove() {
     const success = demo || deleteKey();
+    disableProxy();
     resetQueries();
     setKey(demo ? null : getKey());
     return success;
@@ -147,7 +176,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         import.meta.env.DEV && demo
           ? (await import("./demo")).demoRequest
           : fetch;
-      const result = await lostark<T>(path, token, signal, transport);
+      const result = await lostark<T>(
+        path,
+        token,
+        signal,
+        transport,
+        proxy.current ? PROXY_ORIGIN : undefined,
+      );
       signal?.throwIfAborted();
       // A successful lookup proves the stored key works, so an unverified or
       // previously rejected key is promoted to "ok".
@@ -160,7 +195,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SessionContext.Provider value={{ key, demo, request, store, remove }}>
+    <SessionContext.Provider
+      value={{
+        key,
+        demo,
+        request,
+        store,
+        remove,
+        proxyActive,
+        allowProxy,
+        disableProxy,
+      }}
+    >
       {children}
     </SessionContext.Provider>
   );

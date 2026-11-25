@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ALARMS_PATH, API_BASE, PORTAL, type ApiError } from "./api";
+import {
+  ALARMS_PATH,
+  API_BASE,
+  PORTAL,
+  PROXY_ORIGIN,
+  type ApiError,
+} from "./api";
 import { useSession } from "./session";
 import { KEY, maskKey, normalizeKey, validKey, type Scope } from "./storage";
 import { Card } from "./ui";
+import { ProxyRetry } from "./ProxyRetry";
 
 type Notice = { style: "ok" | "warn" | "err"; text: string };
 export default function KeySettings() {
-  const { key, request, store, remove } = useSession();
+  const { key, request, store, remove, proxyActive } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo =
@@ -23,7 +30,10 @@ export default function KeySettings() {
   const [scope, setScope] = useState<Scope>(key?.scope ?? "local");
   const [notice, setNotice] = useState<Notice>();
   const [pending, setPending] = useState(false);
-  const [candidate, setCandidate] = useState<string>();
+  const [candidate, setCandidate] = useState<{
+    token: string;
+    proxyRetry?: { save: boolean };
+  }>();
   const active = useRef<AbortController>();
   useEffect(() => () => active.current?.abort(), []);
 
@@ -95,7 +105,10 @@ export default function KeySettings() {
           style: "warn",
           text: "지금은 검증할 수 없습니다. 그래도 저장할까요?",
         });
-        setCandidate(token);
+        setCandidate({
+          token,
+          proxyRetry: kind === "network" ? { save } : undefined,
+        });
       } else
         setNotice({
           style: "err",
@@ -248,10 +261,16 @@ export default function KeySettings() {
           )}
           {candidate && (
             <div className="actions">
+              {candidate.proxyRetry && (
+                <ProxyRetry
+                  retry={() => void verify(candidate.proxyRetry?.save ?? false)}
+                  disabled={pending}
+                />
+              )}
               <button
                 type="button"
                 className="btn"
-                onClick={() => persist(candidate, false)}
+                onClick={() => persist(candidate.token, false)}
               >
                 미검증 키 저장
               </button>
@@ -306,7 +325,9 @@ export default function KeySettings() {
           </dd>
           <dt>전송 대상</dt>
           <dd>
-            <code>{API_BASE}</code>
+            <code>
+              {proxyActive ? PROXY_ORIGIN + " → " + API_BASE : API_BASE}
+            </code>
           </dd>
           <dt>검증 경로</dt>
           <dd>

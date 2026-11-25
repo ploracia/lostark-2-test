@@ -88,7 +88,7 @@ function TopBar({
   name: string;
   onSearch: (name: string) => void;
 }) {
-  const { key } = useSession();
+  const { key, proxyActive, disableProxy } = useSession();
   const now = useClock();
   const rate = rateGate.snapshot(now);
   const status = !key
@@ -106,6 +106,11 @@ function TopBar({
       </Link>
       <SearchBox key={name} name={name} onSearch={onSearch} />
       <span className="spacer" />
+      {proxyActive && (
+        <button className="chip" onClick={disableProxy}>
+          프록시 끄기
+        </button>
+      )}
       <span
         className={
           "chip rate-chip num" +

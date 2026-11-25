@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { armoryPath, PORTAL, type ApiError } from "./api";
 import type { Sibling } from "./models";
+import { ProxyRetry } from "./ProxyRetry";
 import {
   AccessoryCard,
   CardSet,
@@ -63,6 +64,7 @@ export function ErrorState({
   now,
   cooldown,
   banner = false,
+  retrying = false,
 }: {
   error: ApiError;
   name: string;
@@ -73,6 +75,7 @@ export function ErrorState({
   now: number;
   cooldown: number;
   banner?: boolean;
+  retrying?: boolean;
 }) {
   const [icon, heading, description] = errorContent[error.kind];
   const seconds =
@@ -184,6 +187,9 @@ export function ErrorState({
             다시 시도
           </button>
         )}
+        {error.kind === "network" && (
+          <ProxyRetry retry={retry} disabled={retrying} />
+        )}
       </div>
     </section>
   );
@@ -218,6 +224,12 @@ function SiblingsDrawer({
           (guide §5.1); show that as an empty roster, not an error. */}
       {query.error && query.error.kind !== "not-found" && (
         <p role="alert">{errorContent[query.error.kind][1]}</p>
+      )}
+      {query.error?.kind === "network" && (
+        <ProxyRetry
+          retry={() => void query.refetch()}
+          disabled={query.isFetching}
+        />
       )}
       {(query.data?.length === 0 || query.error?.kind === "not-found") && (
         <p className="muted">표시할 원정대 캐릭터가 없습니다.</p>
@@ -344,6 +356,7 @@ export default function Character({
           name={name}
           recent={recent}
           retry={retry}
+          retrying={isFetching}
           now={now}
           cooldown={maintenanceAt}
           banner={Boolean(data)}
