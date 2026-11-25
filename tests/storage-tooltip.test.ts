@@ -5,6 +5,7 @@ import {
   armorOrder,
   gemKind,
   parseTooltip,
+  tooltipLines,
   plainText,
 } from "../src/parse/tooltip";
 import {
@@ -260,7 +261,7 @@ describe("tooltip parser against guide §4 structures", () => {
 
   it("decodes entities once and never yields markup", () => {
     expect(plainText("a&amp;lt;b&gt;&nbsp;&#39;c&#39;")).toBe("a&lt;b> 'c'");
-    const parsed = parseTooltip(
+    const lines = tooltipLines(
       JSON.stringify({
         Element_000: {
           type: "SingleTextBox",
@@ -269,6 +270,6 @@ describe("tooltip parser against guide §4 structures", () => {
       }),
     );
     // Rendered as React text only; the parser output contains no live tags.
-    expect(parsed?.lines.join("")).not.toMatch(/<script/i);
+    expect(lines.join("")).not.toMatch(/<script/i);
   });
 });

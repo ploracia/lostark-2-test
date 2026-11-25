@@ -6,7 +6,6 @@ type Option = {
   kind?: "locked" | "changeable";
 };
 export type ParsedTooltip = {
-  lines: string[];
   quality: number | null;
   tier: number | null;
   itemLevel: string | null;
@@ -94,26 +93,43 @@ function braceletOptions(raw: string) {
     .filter((entry) => entry.text);
 }
 
-export function parseTooltip(raw?: string | null): ParsedTooltip | null {
-  if (!raw) return null;
+function tooltipMap(raw?: string | null) {
   try {
-    const root: unknown = JSON.parse(raw);
-    const map = record(root);
-    if (!map || Array.isArray(root)) return null;
+    const root: unknown = raw ? JSON.parse(raw) : null;
+    return Array.isArray(root) ? null : record(root);
+  } catch {
+    return null;
+  }
+}
+
+function textLines(map: Record<string, unknown>) {
+  return Object.values(map)
+    .flatMap((value) => {
+      const block = record(value);
+      return strings(block && "type" in block ? block.value : value);
+    })
+    .flatMap((raw) =>
+      plainText(raw)
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean),
+    );
+}
+
+export function tooltipLines(raw?: string | null) {
+  const map = tooltipMap(raw);
+  return map ? textLines(map) : [];
+}
+
+export function parseTooltip(raw?: string | null): ParsedTooltip | null {
+  const map = tooltipMap(raw);
+  if (!map) return null;
+  try {
     const blocks = Object.values(map)
       .map(record)
       .filter((block) => block !== null);
-    const lines = Object.entries(map)
-      .flatMap(([key, value]) => {
-        const block = record(value);
-        return strings(block && "type" in block ? block.value : map[key]);
-      })
-      .flatMap((raw) =>
-        plainText(raw)
-          .split(/\r?\n/)
-          .map((line) => line.trim())
-          .filter(Boolean),
-      );
+    let fallback: string[] | undefined;
+    const lines = () => (fallback ??= textLines(map));
     let quality: number | null = null;
     const title = record(
       blocks.find((block) => block.type === "ItemTitle")?.value,
@@ -127,7 +143,7 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
       quality = qualityValue;
     const titleText = title
       ? strings(title).map(plainText).join("\n")
-      : lines.join("\n");
+      : lines().join("\n");
     const qualityMatch = titleText.match(/품질\s*(\d+)/)?.[1];
     const tier = titleText.match(/티어\s*(\d+)/)?.[1];
     const refinement = blocks
@@ -193,7 +209,7 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
     }
     if (!options.length) {
       options.push(
-        ...lines
+        ...lines()
           .filter(
             (line) => /^\[[상중하]\]/u.test(line) || accessoryEffect.test(line),
           )
@@ -201,7 +217,7 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
       );
     }
     if (!engravings.length) {
-      for (const [, name, level] of lines
+      for (const [, name, level] of lines()
         .join("\n")
         .matchAll(/\[(.+?)\]\s*활성도\s*\+?(\d+)/g)) {
         engravings.push({
@@ -213,7 +229,6 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
       }
     }
     return {
-      lines,
       quality:
         quality ??
         (qualityMatch && Number(qualityMatch) <= 100

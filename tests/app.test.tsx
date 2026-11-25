@@ -284,6 +284,33 @@ describe("character views with MSW", () => {
     }).toMatchSnapshot();
     if (status === 401) expect(getKey()?.value.status).toBe("rejected");
   });
+  it("shows equipment, accessory and avatar summaries without expandable details", async () => {
+    server.use(http.get(endpoint, () => HttpResponse.json(armory)));
+    go();
+    await screen.findByRole("heading", { name: /은하수바리케이드/ });
+
+    const rows = [...document.querySelectorAll(".eq")];
+    expect(rows).toHaveLength(13);
+    expect(
+      rows.every((row) => !row.querySelector("details, summary, button")),
+    ).toBe(true);
+    expect(screen.getByText("광휘의 수호 검").textContent).toBe(
+      "+23 광휘의 수호 검",
+    );
+    expect(screen.getAllByText(/품질/).length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getByText("찬란한 구원자의 팔찌")
+        .closest(".eq")
+        ?.querySelector(".option-text"),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "아바타" }));
+    const avatar = screen.getByText("새벽 성채 무기").closest(".eq");
+    expect(avatar).toBeTruthy();
+    expect(avatar?.querySelector("details, summary, button")).toBeNull();
+    expect(document.querySelector(".gem .tooltip summary")).toBeTruthy();
+  });
   it("defers siblings, reuses cached results and switches equipment tabs with the keyboard", async () => {
     let armoryCalls = 0;
     let siblingsCalls = 0;

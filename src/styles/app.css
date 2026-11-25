@@ -302,10 +302,6 @@ button:disabled {
 .tooltip summary {
   cursor: pointer;
 }
-.tooltip summary .name {
-  display: inline;
-  white-space: normal;
-}
 .tooltip-content {
   margin: 4px 0;
   padding: 6px 8px;

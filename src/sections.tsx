@@ -7,6 +7,7 @@ import {
   parseTooltip,
   plainText,
   qualityClass,
+  tooltipLines,
 } from "./parse/tooltip";
 import { Card, Empty, GradeIcon, Pill, Picture, Tooltip } from "./ui";
 
@@ -139,10 +140,7 @@ export function PassiveCard({ data }: { data: Armory["ArkPassive"] }) {
                   <strong>{name}</strong>
                   <div className="muted">
                     {effects.map((effect, index) => (
-                      <Tooltip
-                        key={index}
-                        lines={parseTooltip(effect.ToolTip)?.lines}
-                      >
+                      <Tooltip key={index} lines={tooltipLines(effect.ToolTip)}>
                         <span className="passive-effect">
                           {plainText(effect.Description)}
                         </span>
@@ -193,7 +191,7 @@ export function GridCard({ data }: { data: Armory["ArkGrid"] }) {
                 src={slot.Icon}
               />
               <div className="core-name">
-                <Tooltip lines={parseTooltip(slot.Tooltip)?.lines}>
+                <Tooltip lines={tooltipLines(slot.Tooltip)}>
                   <strong>{name ?? type}</strong>
                 </Tooltip>
                 <div className="small muted">
@@ -230,7 +228,7 @@ export function GridCard({ data }: { data: Armory["ArkGrid"] }) {
             {effects.map((effect, index) => (
               <tr key={index} className={effect.Level < 5 ? "muted" : ""}>
                 <th scope="row">
-                  <Tooltip lines={parseTooltip(effect.Tooltip)?.lines}>
+                  <Tooltip lines={tooltipLines(effect.Tooltip)}>
                     {effect.Name}
                   </Tooltip>
                 </th>
@@ -282,7 +280,7 @@ export function EngravingCard({ data }: { data: Armory["ArmoryEngraving"] }) {
                 label={item.Name[0]}
                 src={item.Icon}
               />
-              <Tooltip lines={parseTooltip(item.Tooltip)?.lines}>
+              <Tooltip lines={tooltipLines(item.Tooltip)}>
                 {item.Name} · {item.Grade}
               </Tooltip>
             </div>
@@ -431,7 +429,7 @@ export function GemStrip({ data }: { data: Armory["ArmoryGem"] }) {
                 skill.Option ?? "",
                 ...(skill.Description ?? []),
               ]),
-              ...(parseTooltip(gem.Tooltip)?.lines ?? []),
+              ...tooltipLines(gem.Tooltip),
             ];
             return (
               <div className="gem" key={gem.Slot}>
@@ -481,20 +479,15 @@ function ItemRow({
         badge={accessory ? undefined : quality}
       />
       <div className="item-text">
-        <Tooltip lines={tooltip?.lines}>
-          <span
-            className="name"
-            title={tooltip?.lines.length ? undefined : item.Name}
-          >
-            {name ? (
-              <>
-                <b className="gtext">{name[1]}</b> {name[2]}
-              </>
-            ) : (
-              item.Name
-            )}
-          </span>
-        </Tooltip>
+        <span className="name" title={item.Name}>
+          {name ? (
+            <>
+              <b className="gtext">{name[1]}</b> {name[2]}
+            </>
+          ) : (
+            item.Name
+          )}
+        </span>
         <div className="meta">
           {item.Type} · {item.Grade}
           {tooltip?.itemLevel && <span>Lv.{tooltip.itemLevel}</span>}
