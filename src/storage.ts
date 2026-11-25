@@ -1,4 +1,4 @@
-export const KEY = "arklens.apiKey.v1";
+export const KEY = "mokokoloa.apiKey.v1";
 export type StoredKey = {
   token: string;
   savedAt: string;
@@ -7,27 +7,63 @@ export type StoredKey = {
 };
 export type Scope = "local" | "session";
 
+function storageFor(scope: Scope) {
+  return window[scope === "local" ? "localStorage" : "sessionStorage"];
+}
+
+function legacyKey(key: string) {
+  return key.startsWith("mokokoloa.")
+    ? "arklens." + key.slice("mokokoloa.".length)
+    : null;
+}
+
+export function readRaw(scope: Scope, key: string) {
+  try {
+    const storage = storageFor(scope);
+    const current = storage.getItem(key);
+    const oldKey = legacyKey(key);
+    const previous = oldKey === null ? null : storage.getItem(oldKey);
+    if (oldKey !== null && previous !== null) {
+      try {
+        if (current === null) storage.setItem(key, previous);
+        storage.removeItem(oldKey);
+      } catch {
+        // Keep the old value available if the move cannot finish.
+      }
+    }
+    return current ?? previous;
+  } catch {
+    return null;
+  }
+}
+
 export function read<T>(scope: Scope, key: string, fallback: T): T {
   try {
-    return (
-      JSON.parse(
-        window[scope === "local" ? "localStorage" : "sessionStorage"].getItem(
-          key,
-        ) ?? "null",
-      ) ?? fallback
-    );
+    return JSON.parse(readRaw(scope, key) ?? "null") ?? fallback;
   } catch {
     return fallback;
   }
 }
 
+export function writeRaw(scope: Scope, key: string, value: string | undefined) {
+  try {
+    const storage = storageFor(scope);
+    const oldKey = legacyKey(key);
+    if (value === undefined && oldKey !== null) storage.removeItem(oldKey);
+    if (value === undefined) storage.removeItem(key);
+    else {
+      storage.setItem(key, value);
+      if (oldKey !== null) storage.removeItem(oldKey);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function write(scope: Scope, key: string, value: unknown) {
   try {
-    const storage =
-      window[scope === "local" ? "localStorage" : "sessionStorage"];
-    if (value === undefined) storage.removeItem(key);
-    else storage.setItem(key, JSON.stringify(value));
-    return true;
+    return writeRaw(scope, key, JSON.stringify(value));
   } catch {
     return false;
   }

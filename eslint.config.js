@@ -3,7 +3,7 @@ import ts from "typescript-eslint";
 import hooks from "eslint-plugin-react-hooks";
 
 export default [
-  { ignores: ["dist", "docs", "fixtures"] },
+  { ignores: ["dist", ".wrangler", "docs", "fixtures"] },
   js.configs.recommended,
   ...ts.configs.recommended,
   {

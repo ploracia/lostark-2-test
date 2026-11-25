@@ -1,4 +1,4 @@
-name = "ark-lens-proxy"
+name = "mokokoloa-proxy"
 main = "worker.ts"
 compatibility_date = "2026-11-25"
 workers_dev = true
@@ -8,5 +8,5 @@ preview_urls = false
 enabled = false
 
 [vars]
-ALLOWED_ORIGIN = "https://ark-lens.pages.dev"
+ALLOWED_ORIGIN = "https://mokokoloa.pages.dev"
 # LOCAL_DEV_ORIGIN = "http://localhost:5173"

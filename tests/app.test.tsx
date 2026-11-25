@@ -28,7 +28,7 @@ import {
   lostark,
   rateGate,
 } from "../src/api";
-import { ArkLens } from "../src/main";
+import { Mokokoloa } from "../src/main";
 import { engravingIcons } from "../src/data/engraving-icons";
 import { RECENT, readRecent } from "../src/recent";
 import { clearNotFound, queryClient, writeCache } from "../src/session";
@@ -63,8 +63,28 @@ function go(path = hash, withKey = true) {
       status: "ok",
     });
   history.replaceState(null, "", path.startsWith("/") ? path : "/" + path);
-  return render(<ArkLens />);
+  return render(<Mokokoloa />);
 }
+
+describe("address change notice", () => {
+  it.each([
+    "/?from=ark-lens" + hash,
+    "/c/example?from=ark-lens",
+    "/settings/key?from=ark-lens",
+  ])("shows the notice at key registration after opening %s", async (path) => {
+    go(path, false);
+    expect(
+      await screen.findByText("주소가 바뀌어 키를 다시 등록해야 할 수 있어요"),
+    ).toBeTruthy();
+  });
+
+  it("omits the notice on an ordinary visit", () => {
+    go("/#/settings/key", false);
+    expect(
+      screen.queryByText("주소가 바뀌어 키를 다시 등록해야 할 수 있어요"),
+    ).toBeNull();
+  });
+});
 
 describe("recent searches", () => {
   function mockCharacters() {
@@ -234,7 +254,7 @@ describe("first visit onboarding", () => {
         http.get(endpoint, armoryRequest),
       );
       history.replaceState(null, "", originalUrl);
-      render(<ArkLens />);
+      render(<Mokokoloa />);
       expect(
         screen.getByRole("heading", { name: "로스트아크 API 키 등록" }),
       ).toBeTruthy();
@@ -442,7 +462,7 @@ describe("character views with MSW", () => {
       fireEvent.click(screen.getByRole("button", { name: "원정대 캐릭터" }));
       expect(screen.getByRole("button", { name: /새벽별빛/ })).toBeTruthy();
       fireEvent.click(screen.getByRole("button", { name: "닫기" }));
-      fireEvent.click(screen.getByRole("link", { name: "Ark Lens 홈" }));
+      fireEvent.click(screen.getByRole("link", { name: "모꼬꼬로아 홈" }));
       const field = screen.getAllByRole("searchbox")[0];
       fireEvent.change(field, { target: { value: name } });
       fireEvent.submit(field.closest("form")!);
@@ -536,7 +556,7 @@ describe("character views with MSW", () => {
     expect(document.documentElement.dataset.theme).toBe("light");
     first.unmount();
     queryClient.clear();
-    render(<ArkLens />);
+    render(<Mokokoloa />);
     expect(
       await screen.findByRole("heading", { name: /은하수바리케이드/ }),
     ).toBeTruthy();
@@ -581,7 +601,7 @@ describe("review fixes", () => {
     const first = go();
     await screen.findByRole("heading", { name: /캐릭터를 찾을 수 없습니다/ });
     first.unmount();
-    render(<ArkLens />);
+    render(<Mokokoloa />);
     await screen.findByRole("heading", { name: /캐릭터를 찾을 수 없습니다/ });
     expect(calls).toBe(1);
   });
@@ -636,7 +656,7 @@ describe("review fixes", () => {
           { at: number; keySavedAt: string; data: unknown },
         ];
       writeCache([1, 2, 3, 4, 5].map(entry));
-      const saved = JSON.parse(sessionStorage.getItem("arklens.cache.v1")!);
+      const saved = JSON.parse(sessionStorage.getItem("mokokoloa.cache.v1")!);
       expect(Object.keys(saved).length).toBeGreaterThan(0);
       expect(Object.keys(saved).at(-1)).toBe("/p5");
       expect(saved["/p1"]).toBeUndefined();

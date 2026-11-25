@@ -1,7 +1,7 @@
 # Mokokoloa — 캐릭터 화면 "이관" 탭 설계
 
 > 작성일 2026-11-25 · 구현 담당: Codex · 상태: 설계와 정적 목업까지 끝남, 구현 전
-> 앱 이름: 이 문서와 목업은 새 이름 **Mokokoloa**로 씁니다. 기존 코드(`Ark Lens` 표기)의 이름 변경은 별도 작업입니다.
+> 앱 이름은 **모꼬꼬로아 (Mokokoloa)**입니다.
 > 목업: `docs/mockup-transfer/index.html` (외부 호출 없음, `fixtures/armory-sample.json` 캐릭터 사용) · 스크린샷: `docs/mockup-transfer/*.png`
 > 규칙 출처(우선순위 순서):
 > 1. 공식 공지 [로스트아크 2부 업데이트에 따른 주요 개편 사항 사전 안내](https://lostark.game.onstove.com/News/Notice/Views/13608) (2026-11-25 게시)

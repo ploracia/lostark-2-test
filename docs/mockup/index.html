@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ark Lens 목업</title>
+<title>모꼬꼬로아 목업</title>
 <!-- 정적 목업: 외부 호출 없음. 모든 데이터는 아래 SAMPLE(실제 API 응답 형태를 모방)에서 렌더링. -->
 <style>
 :root{
@@ -234,7 +234,7 @@ a{color:var(--accent)}
 </div>
 
 <header class="topbar">
-  <div class="logo"><i></i><b>Ark Lens</b></div>
+  <div class="logo"><i></i><b>모꼬꼬로아</b></div>
   <form class="search" role="search" onsubmit="return false">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="q" aria-label="캐릭터명 검색" placeholder="캐릭터명 검색" value="은하수바리케이드">
@@ -306,7 +306,7 @@ a{color:var(--accent)}
       </ul>
       <div class="divider"></div>
       <dl class="kv">
-        <dt>저장 위치</dt><dd><code>localStorage["arklens.apiKey.v1"]</code></dd>
+        <dt>저장 위치</dt><dd><code>localStorage["mokokoloa.apiKey.v1"]</code></dd>
         <dt>전송 대상</dt><dd><code>developer-lostark.game.onstove.com</code>만</dd>
         <dt>검증 요청</dt><dd><code>GET /news/alarms</code> · 1회 소모</dd>
       </dl>
@@ -573,8 +573,8 @@ $("#sibBtnMock").onclick=()=>{show("char");openDrawer()};$("#closeDrawer").oncli
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();if(e.key==="/"&&document.activeElement.tagName!=="INPUT"){e.preventDefault();$("#q").focus()}});
 $("#eye").onclick=()=>{const i=$("#keyInput");i.type=i.type==="password"?"text":"password";$("#eye").textContent=i.type==="password"?"보기":"숨기기"};
 const themes=[null,"light","dark"];let ti=0;
-try{const t=localStorage.getItem("arklens.theme");if(t){document.documentElement.dataset.theme=t;ti=themes.indexOf(t)}}catch(e){}
-$("#theme").onclick=()=>{ti=(ti+1)%3;const t=themes[ti];if(t)document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;try{t?localStorage.setItem("arklens.theme",t):localStorage.removeItem("arklens.theme")}catch(e){}};
+try{const t=localStorage.getItem("mokokoloa.theme");if(t){document.documentElement.dataset.theme=t;ti=themes.indexOf(t)}}catch(e){}
+$("#theme").onclick=()=>{ti=(ti+1)%3;const t=themes[ti];if(t)document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;try{t?localStorage.setItem("mokokoloa.theme",t):localStorage.removeItem("mokokoloa.theme")}catch(e){}};
 const P=new URLSearchParams(location.search);if(P.get("theme"))document.documentElement.dataset.theme=P.get("theme");
 const h=location.hash.slice(1);if(["key","char","states"].includes(h))show(h);if(h==="drawer"){show("char");openDrawer()}
 </script>

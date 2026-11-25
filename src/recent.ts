@@ -1,6 +1,6 @@
 import { read, type Scope } from "./storage";
 
-export const RECENT = "arklens.recent.v1";
+export const RECENT = "mokokoloa.recent.v1";
 export const RECENT_LIMIT = 5;
 export type RecentSearch = {
   name: string;

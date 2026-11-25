@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { read, write } from "./storage";
+import { read, readRaw, write, writeRaw } from "./storage";
 
 export function useClock() {
   const [now, setNow] = useState(Date.now);
@@ -13,12 +13,8 @@ export function useClock() {
 const themes = ["system", "light", "dark"] as const;
 export function ThemeToggle() {
   const [theme, setTheme] = useState<(typeof themes)[number]>(() => {
-    try {
-      const value = localStorage.getItem("arklens.theme");
-      return value === "dark" || value === "light" ? value : "system";
-    } catch {
-      return "system";
-    }
+    const value = readRaw("local", "mokokoloa.theme");
+    return value === "dark" || value === "light" ? value : "system";
   });
   useEffect(() => {
     if (theme === "system") delete document.documentElement.dataset.theme;
@@ -30,12 +26,11 @@ export function ThemeToggle() {
       onClick={() => {
         const next = themes[(themes.indexOf(theme) + 1) % themes.length];
         setTheme(next);
-        try {
-          if (next === "system") localStorage.removeItem("arklens.theme");
-          else localStorage.setItem("arklens.theme", next);
-        } catch {
-          /* Theme continues to work in memory. */
-        }
+        writeRaw(
+          "local",
+          "mokokoloa.theme",
+          next === "system" ? undefined : next,
+        );
       }}
       aria-label={"테마 전환 · 현재 " + theme}
       title="시스템 → 라이트 → 다크"
@@ -46,7 +41,7 @@ export function ThemeToggle() {
 }
 
 export function useNames(key: "favorites") {
-  const storageKey = "arklens." + key + ".v1";
+  const storageKey = "mokokoloa." + key + ".v1";
   const [names, setNames] = useState<string[]>(() => {
     const saved = read<unknown>("local", storageKey, []);
     return Array.isArray(saved)

@@ -34,7 +34,7 @@ export const TTL = 180_000;
 export const SIBLINGS_TTL = 600_000;
 /** Short negative cache so repeated typos do not spend quota (guide §5.3). */
 export const NOT_FOUND_TTL = 60_000;
-const CACHE = "arklens.cache.v1";
+const CACHE = "mokokoloa.cache.v1";
 const CACHE_ENTRIES = 20;
 const notFound = new Map<string, number>();
 /** Clears the not-found cache (key change, tests). */

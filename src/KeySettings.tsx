@@ -13,7 +13,11 @@ import { Card } from "./ui";
 import { ProxyRetry } from "./ProxyRetry";
 
 type Notice = { style: "ok" | "warn" | "err"; text: string };
-export default function KeySettings() {
+export default function KeySettings({
+  fromOldAddress,
+}: {
+  fromOldAddress: boolean;
+}) {
   const { key, request, store, remove, proxyActive } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
@@ -128,6 +132,11 @@ export default function KeySettings() {
           캐릭터를 조회하려면 로스트아크 개발자 포털에서 발급한 API 키가
           필요합니다.
         </p>
+        {fromOldAddress && (
+          <p className="notice warn">
+            주소가 바뀌어 키를 다시 등록해야 할 수 있어요
+          </p>
+        )}
         <section className="key-guide" aria-labelledby="key-guide-title">
           <h2 id="key-guide-title">API 키 발급 방법</h2>
           <a

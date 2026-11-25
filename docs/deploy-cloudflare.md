@@ -1,4 +1,4 @@
-# Ark Lens Cloudflare 배포
+# 모꼬꼬로아 Cloudflare 배포
 
 ## Pages 배포
 
@@ -13,7 +13,7 @@
 3. Direct Upload 방식으로 Pages 프로젝트를 만듭니다. 예시는 프로덕션 브랜치 이름이 `main`인 경우입니다. 프로젝트 이름을 바꾸면 루트 `wrangler.toml`의 `name`도 같은 값으로 수정합니다. [Cloudflare Pages Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/)
 
    ```sh
-   npx wrangler pages project create ark-lens --production-branch main
+   npx wrangler pages project create mokokoloa --production-branch main
    ```
 
 4. 다음 명령을 실행합니다. `--branch`는 위에서 지정한 프로덕션 브랜치와 일치시킵니다. Wrangler가 계정을 선택하라고 하면 프로젝트를 만든 계정을 선택합니다.
@@ -26,11 +26,23 @@
 
 빌드가 `index.html`의 메타 CSP에서 정책을 읽어 `dist/_headers`에도 동일하게 적용합니다. 배포 후 브라우저 개발자 도구의 문서 응답에서 CSP와 `Referrer-Policy: no-referrer`를 확인할 수 있습니다. [Cloudflare Pages 사용자 정의 헤더](https://developers.cloudflare.com/pages/configuration/headers/)
 
+## 기존 주소 이전
+
+새 앱을 `https://mokokoloa.pages.dev`에 먼저 배포하고 키 등록 화면과 해시 경로가 열리는지 확인합니다. 프록시를 사용할 경우 아래 Worker 배포와 새 앱 연결까지 마친 뒤, 기존 `ark-lens` 프로젝트에 리다이렉트 전용 정적 파일을 배포합니다.
+
+```sh
+npm run deploy:redirect -- --branch main
+```
+
+기존 주소의 루트는 HTML 리다이렉트에서 쿼리와 해시를 유지합니다. 직접 경로는 Pages의 301로 새 도메인의 `/_from-ark-lens/` 경로를 거치고, 새 앱은 원래 경로와 함께 `from=ark-lens`를 표시합니다. 원래 쿼리를 유지하기 위해 301 규칙의 목적지에는 쿼리를 넣지 않습니다. [Cloudflare Pages 리다이렉트](https://developers.cloudflare.com/pages/configuration/redirects/)
+
+브라우저 저장소는 주소별로 분리되므로 기존 도메인에 저장한 API 키는 새 도메인에서 다시 등록해야 합니다. 같은 주소에서 앱을 업데이트하면 기존 `arklens.*` 값을 읽을 때 `mokokoloa.*`로 옮깁니다.
+
 ## 선택 사항 · Worker 프록시 연결
 
 별도 Worker를 사용합니다. Pages Functions는 같은 origin을 쓸 수 있지만, 이 구성에서는 프록시 없이 정적 Pages만 배포할 수 있고, 프록시를 켠 뒤에도 두 서비스를 독립적으로 배포하고 롤백할 수 있습니다.
 
-1. `proxy/wrangler.toml`의 `ALLOWED_ORIGIN`을 실제 Pages 프로덕션 origin으로 변경합니다. 예를 들어 `https://ark-lens.pages.dev`입니다. 경로와 끝 슬래시 없이 기입합니다. 로컬 개발에서만 추가로 연결하려면 `LOCAL_DEV_ORIGIN` 주석을 풀고 실제 개발 주소 하나를 지정합니다. 다른 `pages.dev` 주소와 프리뷰 주소에서의 호출은 기본 설정에서 거부됩니다.
+1. `proxy/wrangler.toml`의 `ALLOWED_ORIGIN`을 실제 Pages 프로덕션 origin으로 변경합니다. 예를 들어 `https://mokokoloa.pages.dev`입니다. 경로와 끝 슬래시 없이 기입합니다. 로컬 개발에서만 추가로 연결하려면 `LOCAL_DEV_ORIGIN` 주석을 풀고 실제 개발 주소 하나를 지정합니다. 다른 `pages.dev` 주소와 프리뷰 주소에서의 호출은 기본 설정에서 거부됩니다.
 2. 처음 Workers를 사용한다면 대시보드의 **Workers & Pages**에서 `workers.dev` 하위 도메인을 설정합니다. 저장소 루트에서 배포합니다.
 
    ```sh
@@ -40,7 +52,7 @@
 3. 출력된 Worker origin을 저장소 루트의 `.env.production.local`에 넣고 Pages를 다시 배포합니다. 이 변수는 브라우저 번들과 CSP에 포함되는 공개 URL입니다. Direct Upload에서는 로컬 빌드가 값을 읽습니다.
 
    ```dotenv
-   VITE_PROXY_URL=https://ark-lens-proxy.YOUR_SUBDOMAIN.workers.dev
+   VITE_PROXY_URL=https://mokokoloa-proxy.YOUR_SUBDOMAIN.workers.dev
    ```
 
    ```sh

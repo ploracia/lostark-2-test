@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       react(),
       {
-        name: "arklens-csp",
+        name: "mokokoloa-csp",
         transformIndexHtml(html) {
           html = html.replace(policy, connectPolicy);
           if (command === "build") return html;

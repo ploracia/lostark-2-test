@@ -8,7 +8,7 @@ import {
 import { afterEach, expect, it, vi } from "vitest";
 import armory from "../fixtures/armory-sample.json";
 import { API_BASE, armoryPath, rateGate } from "../src/api";
-import { ArkLens } from "../src/main";
+import { Mokokoloa } from "../src/main";
 import { queryClient } from "../src/session";
 import { saveKey } from "../src/storage";
 
@@ -53,7 +53,7 @@ it("sends the key through the Worker only after consent and returns to direct mo
     .mockReturnValueOnce(true);
   saveKey("local", { token, savedAt: new Date().toISOString(), status: "ok" });
   history.replaceState(null, "", "/#/c/" + encodeURIComponent(name));
-  render(<ArkLens />);
+  render(<Mokokoloa />);
 
   const retry = await screen.findByRole("button", { name: "프록시로 재시도" });
   expect(request).toHaveBeenCalledTimes(1);

@@ -1,4 +1,4 @@
-# Ark Lens — 로스트아크 캐릭터 조회 웹앱 UI 설계
+# 모꼬꼬로아 — 로스트아크 캐릭터 조회 웹앱 UI 설계
 
 > 작성일 2026-11-25 · 대상: 구현 담당(Codex) · 상태: 설계/정적 목업 완료, 구현 전
 > 목업: `mockup/index.html` (외부 호출 없음, 샘플 데이터) · 스크린샷: `mockup/*.png`
@@ -17,7 +17,7 @@
 | 캐시 | 메모리(TanStack Query)와 `sessionStorage`에 캐릭터별로 **3분 TTL**로 둡니다. 새로고침 버튼은 캐시를 무시합니다. |
 | 레이트 리밋 | `X-RateLimit-*` 헤더는 브라우저 JS에서 **읽지 못할 가능성이 높습니다**(Expose 헤더 없음, §1). 그래서 클라이언트 쪽에서 60초 슬라이딩 윈도 카운터로 잔여 횟수를 **추정해** 표시합니다. |
 | 스택 | Vite, React 18, TypeScript, TanStack Query v5, CSS Modules 또는 바닐라 CSS 토큰, Vitest. 서버 없이 정적 호스팅합니다. |
-| 디자인 | 독자 브랜드 "Ark Lens"입니다(가칭). 참고 이미지에서는 정보 구성과 밀도만 가져오고, 색·형태·로고는 새로 만들었습니다. |
+| 디자인 | 독자 브랜드 "모꼬꼬로아"입니다. 참고 이미지에서는 정보 구성과 밀도만 가져오고, 색·형태·로고는 새로 만들었습니다. |
 
 ---
 
@@ -107,7 +107,7 @@ Vary: Origin
 
 ### 3.2 저장 규약
 ```ts
-// localStorage 또는 sessionStorage, key: "arklens.apiKey.v1"
+// localStorage 또는 sessionStorage, key: "mokokoloa.apiKey.v1"
 type StoredKey = { token: string; savedAt: string /*ISO*/; validatedAt?: string; status: "ok" | "unverified" | "rejected" };
 ```
 - 읽을 때는 `sessionStorage`를 먼저 보고 없으면 `localStorage`를 봅니다. 모든 접근은 `try/catch`로 감쌉니다(사생활 보호 모드 대비).
@@ -138,7 +138,7 @@ type StoredKey = { token: string; savedAt: string /*ISO*/; validatedAt?: string;
 | 컴포넌트 | 사용 필드 | 표시 규칙 |
 |---|---|---|
 | `TopBar` | (로컬) 키 상태, 레이트 추정치 | 칩: 초록 = 정상, 회색 = 키 없음, 빨강 = rejected. "잔여 ≈ n/100" |
-| `SearchBox` | — | 최근 검색 10개(localStorage `arklens.recent.v1`) |
+| `SearchBox` | — | 최근 검색 10개(localStorage `mokokoloa.recent.v1`) |
 | `ProfileHero` | `A.ArmoryProfile`: `CharacterImage`, `ServerName`, `CharacterClassName`, `CharacterLevel`, `ExpeditionLevel`, `CharacterName`, `Title`, `ItemAvgLevel`, `CombatPower`, `HonorPoint`, `Stats[]`(Type∈치명·특화·신속·제압·인내·숙련), `GuildName`, `TownName`, `TownLevel` | `ItemAvgLevel`과 `CombatPower`는 문자열이므로 그대로 출력합니다(정렬할 때만 쉼표를 제거하고 숫자로 바꿉니다). 이미지가 없으면 직업 첫 글자 플레이스홀더. `Stats` Tooltip은 hover 시 표시 |
 | `ArkPassiveCard` | `A.ArkPassive`: `IsArkPassive`, `Title`, `Points[]{Name,Value,Description}`, `Effects[]{Name,Description,Icon,ToolTip}` | 진화/깨달음/도약 3칸 숫자. `Effects`는 `Name`(=진화/깨달음/도약)으로 그룹화하고 `Description`을 나열합니다. **필드명이 `ToolTip`인 것에 주의** |
 | `ArkGridCard` | `A.ArkGrid`: `Slots[]{Index,Name,Point,Grade,Icon,Gems[]{IsActive,Grade}}`, `Effects[]{Name,Level,Tooltip}` | `Name`을 " : "로 나눠 부위와 코어명으로 씁니다. 헤더에 질서/혼돈 포인트 합계. 젬은 마름모 점이며 비활성은 회색. `Effects`는 Lv 표로 보여 주고, Lv가 낮으면 흐리게 처리합니다(기준 <5, 조정 가능) |
@@ -167,7 +167,7 @@ export const ARMORY_FILTERS = "profiles+equipment+avatars+engravings+cards+gems+
 ## 5. 시각 디자인 규칙
 
 ### 5.1 테마 토큰
-`:root`에 라이트 토큰을 두고, 다크는 `@media (prefers-color-scheme: dark)`에 `:root:not([data-theme=light])`와 `:root[data-theme=dark]`로 정의합니다. 토글은 시스템 → 라이트 → 다크 순으로 돌고, 선택은 `localStorage["arklens.theme"]`에 저장합니다.
+`:root`에 라이트 토큰을 두고, 다크는 `@media (prefers-color-scheme: dark)`에 `:root:not([data-theme=light])`와 `:root[data-theme=dark]`로 정의합니다. 토글은 시스템 → 라이트 → 다크 순으로 돌고, 선택은 `localStorage["mokokoloa.theme"]`에 저장합니다.
 
 | 토큰 | 라이트 | 다크 |
 |---|---|---|

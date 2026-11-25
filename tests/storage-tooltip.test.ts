@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import fixture from "../fixtures/armory-sample.json";
 import {
   accessoryTypes,
@@ -14,6 +14,8 @@ import {
   KEY,
   maskKey,
   normalizeKey,
+  read,
+  readRaw,
   saveKey,
   validKey,
   write,
@@ -57,6 +59,61 @@ describe("key storage", () => {
     expect(getKey()?.value).toEqual(entry);
     expect(deleteKey()).toBe(true);
     expect(getKey()).toBeNull();
+  });
+});
+
+describe("same-origin storage migration", () => {
+  it.each([
+    ["local", "apiKey.v1", { token, status: "ok", savedAt: "2026-11-25" }],
+    ["session", "apiKey.v1", { token, status: "ok", savedAt: "2026-11-25" }],
+    ["local", "recent.v1", ["모꼬꼬"]],
+    ["session", "recent.v1", ["모꼬꼬"]],
+    ["local", "favorites.v1", ["모꼬꼬"]],
+    ["session", "cache.v1", { queries: [] }],
+  ] as const)("moves the %s %s value once", (scope, suffix, value) => {
+    const storage = scope === "local" ? localStorage : sessionStorage;
+    const oldKey = "arklens." + suffix;
+    const newKey = "mokokoloa." + suffix;
+    storage.setItem(oldKey, JSON.stringify(value));
+    expect(read(scope, newKey, null)).toEqual(value);
+    expect(storage.getItem(oldKey)).toBeNull();
+    expect(storage.getItem(newKey)).toBe(JSON.stringify(value));
+    expect(read(scope, newKey, null)).toEqual(value);
+  });
+
+  it("keeps a newer raw theme and deletes the superseded value", () => {
+    localStorage.setItem("arklens.theme", "dark");
+    localStorage.setItem("mokokoloa.theme", "light");
+    expect(readRaw("local", "mokokoloa.theme")).toBe("light");
+    expect(localStorage.getItem("arklens.theme")).toBeNull();
+  });
+
+  it("retains and reads the raw old theme if a write fails, then retries", () => {
+    localStorage.setItem("arklens.theme", "dark");
+    const setItem = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementationOnce(() => {
+        throw new DOMException("Storage is full", "QuotaExceededError");
+      });
+    try {
+      expect(readRaw("local", "mokokoloa.theme")).toBe("dark");
+      expect(localStorage.getItem("arklens.theme")).toBe("dark");
+      expect(localStorage.getItem("mokokoloa.theme")).toBeNull();
+      expect(readRaw("local", "mokokoloa.theme")).toBe("dark");
+      expect(localStorage.getItem("arklens.theme")).toBeNull();
+      expect(localStorage.getItem("mokokoloa.theme")).toBe("dark");
+    } finally {
+      setItem.mockRestore();
+    }
+  });
+
+  it("deletes unread legacy credentials from both scopes", () => {
+    localStorage.setItem("arklens.apiKey.v1", JSON.stringify({ token }));
+    sessionStorage.setItem("arklens.apiKey.v1", JSON.stringify({ token }));
+    expect(deleteKey()).toBe(true);
+    expect(getKey()).toBeNull();
+    expect(localStorage.getItem("arklens.apiKey.v1")).toBeNull();
+    expect(sessionStorage.getItem("arklens.apiKey.v1")).toBeNull();
   });
 });
 

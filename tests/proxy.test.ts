@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import worker from "../proxy/worker";
 import { API_BASE } from "../src/api-origin";
 
-const origin = "https://ark-lens.pages.dev";
+const origin = "https://mokokoloa.pages.dev";
 const local = "http://localhost:5173";
 const env = { ALLOWED_ORIGIN: origin, LOCAL_DEV_ORIGIN: local };
 const token = "fixture.proxy.token";

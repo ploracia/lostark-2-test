@@ -1,6 +1,6 @@
-# Ark Lens
+# 모꼬꼬로아 (Mokokoloa)
 
-로스트아크 캐릭터 조회 웹앱입니다. Vite, React 18, TypeScript, React Router와 TanStack Query를 사용합니다.
+로스트아크 캐릭터 조회 웹앱입니다. Vite, React 18, TypeScript, React Router와 TanStack Query를 사용합니다. [모꼬꼬로아 열기](https://mokokoloa.pages.dev)
 
 Node.js 22.12 이상에서 실행합니다.
 

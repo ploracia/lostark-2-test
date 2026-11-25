@@ -13,6 +13,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { rateGate } from "./api";
 import Character, { characterUrl } from "./Character";
 import KeySettings from "./KeySettings";
+import { legacyArrivalPath } from "./legacy-arrival";
 import { RecentSearches } from "./RecentSearches";
 import { queryClient, SessionProvider, useSession } from "./session";
 import { maskKey } from "./storage";
@@ -127,7 +128,7 @@ function TopBar({ name }: { name: string }) {
       <header className="topbar">
         <span className="logo">
           <i aria-hidden="true" />
-          <b>Ark Lens</b>
+          <b>모꼬꼬로아</b>
         </span>
         <span className="spacer" />
         <ThemeToggle />
@@ -142,9 +143,9 @@ function TopBar({ name }: { name: string }) {
         : "키 " + maskKey(key.value.token);
   return (
     <header className="topbar">
-      <Link className="logo" to="/" aria-label="Ark Lens 홈">
+      <Link className="logo" to="/" aria-label="모꼬꼬로아 홈">
         <i aria-hidden="true" />
-        <b>Ark Lens</b>
+        <b>모꼬꼬로아</b>
       </Link>
       <SearchBox key={name} name={name} />
       <span className="spacer" />
@@ -212,6 +213,10 @@ function App() {
   const location = useLocation();
   const { key, demo, recent } = useSession();
   const [favorites, setFavorites] = useNames("favorites");
+  const [fromOldAddress] = useState(
+    () =>
+      new URLSearchParams(window.location.search).get("from") === "ark-lens",
+  );
   const match = location.pathname.match(/^\/c\/([^/]+)(?:\/(transfer))?\/?$/);
   const unknownCharacterTab =
     !match && location.pathname.match(/^\/c\/([^/]+)\//);
@@ -225,7 +230,13 @@ function App() {
   if (!key && !settings)
     return (
       <Navigate
-        to="/settings/key"
+        to={{
+          pathname: "/settings/key",
+          search:
+            fromOldAddress && window.location.pathname !== "/"
+              ? "?from=ark-lens"
+              : "",
+        }}
         replace
         state={{ returnTo: createPath(location) }}
       />
@@ -252,7 +263,7 @@ function App() {
           </p>
         )}
         {settings ? (
-          <KeySettings />
+          <KeySettings fromOldAddress={fromOldAddress} />
         ) : name ? (
           <Character
             key={name}
@@ -283,7 +294,7 @@ function App() {
   );
 }
 
-export function ArkLens() {
+export function Mokokoloa() {
   // Keep existing hash links and support direct paths served by the SPA fallback.
   const [Router] = useState(() =>
     window.location.pathname === "/" ? HashRouter : BrowserRouter,
@@ -299,4 +310,8 @@ export function ArkLens() {
   );
 }
 const root = document.getElementById("root");
-if (root) createRoot(root).render(<ArkLens />);
+if (root) {
+  const arrival = legacyArrivalPath(window.location);
+  if (arrival !== null) history.replaceState(history.state, "", arrival);
+  createRoot(root).render(<Mokokoloa />);
+}
