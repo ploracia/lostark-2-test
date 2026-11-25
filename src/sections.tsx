@@ -1,4 +1,5 @@
 import { useId, useState, type ReactNode } from "react";
+import { engravingIcon } from "./data/engraving-icons";
 import type { Armory, Equipment, Profile } from "./models";
 import {
   accessoryTypes,
@@ -254,7 +255,12 @@ export function EngravingCard({ data }: { data: Armory["ArmoryEngraving"] }) {
       <div className="list">
         {passive.map((item, index) => (
           <div className="row engr" key={index} data-grade={item.Grade}>
-            <GradeIcon small grade={item.Grade} label={item.Name[0]} />
+            <GradeIcon
+              small
+              grade={item.Grade}
+              label={item.Name.trim()[0]}
+              src={engravingIcon(item.Name)}
+            />
             <div className="engr-details">
               <strong className="gtext">{item.Name}</strong>
               <div className="small muted">

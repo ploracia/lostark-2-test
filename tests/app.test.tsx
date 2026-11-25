@@ -29,6 +29,7 @@ import {
   rateGate,
 } from "../src/api";
 import { ArkLens } from "../src/main";
+import { engravingIcons } from "../src/data/engraving-icons";
 import { RECENT, readRecent } from "../src/recent";
 import { clearNotFound, queryClient, writeCache } from "../src/session";
 import { getKey, saveKey } from "../src/storage";
@@ -551,7 +552,7 @@ describe("review fixes", () => {
     }
   });
 
-  it("allows the profile image host in the production CSP and keeps scripts self-only", async () => {
+  it("allows the profile and engraving image hosts and keeps scripts self-only", async () => {
     const html = (await import("../index.html?raw")).default;
     const csp = html.match(/content="(default-src[^"]+)"/)?.[1] ?? "";
     const directive = (name: string) =>
@@ -560,9 +561,12 @@ describe("review fixes", () => {
         .map((part) => part.trim())
         .find((part) => part.startsWith(name + " "));
     expect(directive("img-src")).toContain("https://img.lostark.co.kr");
-    expect(directive("img-src")).toContain(
-      "https://cdn-lostark.game.onstove.com",
+    const engravingOrigins = new Set(
+      Object.values(engravingIcons).map((src) => new URL(src).origin),
     );
+    for (const origin of engravingOrigins) {
+      expect(directive("img-src")?.split(/\s+/)).toContain(origin);
+    }
     expect(directive("script-src")).toBe("script-src 'self'");
     expect(directive("connect-src")).toBe(
       "connect-src 'self' https://developer-lostark.game.onstove.com",
