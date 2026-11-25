@@ -33,6 +33,7 @@ export function extractTransferInput(data: Armory): TransferInput {
     .map((effect) => ({
       name: effect.Name,
       level: effect.AbilityStoneLevel ?? null,
+      unit: "lv" as const,
       harmful: false,
     }));
   const stoneEngravings = stone?.parsed?.engravings ?? [];
@@ -107,6 +108,7 @@ export function extractTransferInput(data: Armory): TransferInput {
     gems: (data.ArmoryGem?.Gems ?? []).map((gem) => ({
       slot: gem.Slot,
       level: gem.Level,
+      tier: parseTooltip(gem.Tooltip)?.tier ?? null,
       kind:
         Object.keys(GEM_KIND_TIER).find((kind) => gem.Name.includes(kind)) ??
         null,

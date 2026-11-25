@@ -14,6 +14,7 @@ import type {
 } from "./transfer/types";
 import { Card, GradeIcon } from "./ui";
 import { OverridesPanel, countOverrides } from "./TransferOverrides";
+import { weakest } from "./transfer/evidence";
 
 const STORAGE_KEY = "mokokoloa.transfer.v1";
 const labels = { official: "공식 확정", estimated: "추정", unknown: "미확인" };
@@ -23,6 +24,12 @@ const decimal = new Intl.NumberFormat("ko-KR", {
 });
 const integer = new Intl.NumberFormat("ko-KR");
 const numeric = (n: number) => integer.format(n);
+
+/** 여러 근거 중 가장 약한 것(미확인 < 추정 < 공식 확정)을 고릅니다. */
+function weakestEvidence(list: Evidence[]): Evidence {
+  const level = weakest(...list.map((evidence) => evidence.level));
+  return list.find((evidence) => evidence.level === level) ?? list[0];
+}
 
 export function EvidenceBadge({ evidence }: { evidence: Evidence }) {
   return (
@@ -175,6 +182,12 @@ function SlotChip({
               />
             </>
           )}
+          {slot.itemLevel.evidence.level === "estimated" && (
+            <>
+              {" "}
+              <EvidenceBadge evidence={slot.itemLevel.evidence} />
+            </>
+          )}
         </span>
         {slot.slotHoning && (
           <small className="muted">
@@ -182,7 +195,7 @@ function SlotChip({
               estimate={slot.slotHoning}
               format={(value) => "재련 +" + value}
             />{" "}
-            {slot.slotHoning.kind === "none" && (
+            {slot.slotHoning.evidence.level !== "official" && (
               <EvidenceBadge evidence={slot.slotHoning.evidence} />
             )}
           </small>
@@ -291,7 +304,16 @@ function GearConversion({
                 </div>
               ))}
             </div>
-            {next[0] && <EvidenceBadge evidence={next[0].itemLevel.evidence} />}
+            {next.length > 0 && (
+              <EvidenceBadge
+                evidence={weakestEvidence(
+                  next.flatMap((slot) => [
+                    slot.itemLevel.evidence,
+                    slot.polish.evidence,
+                  ]),
+                )}
+              />
+            )}
           </div>
         );
       })}

@@ -48,11 +48,18 @@ export type BraceletIn = {
   options: { text: string; kind?: "locked" | "changeable" }[] | null;
 };
 export type StoneIn = {
-  engravings: { name: string; level: number | null; harmful: boolean }[];
+  engravings: {
+    name: string;
+    level: number | null;
+    unit?: "lv" | "node";
+    harmful: boolean;
+  }[];
 };
 export type GemIn = {
   slot: number;
   kind: string | null;
+  /** 툴팁의 "티어 N". 없으면 보석 이름으로 추정합니다. */
+  tier?: number | null;
   level: number;
   bound: boolean | null;
 };

@@ -61,6 +61,13 @@ export function collectPayouts(
       "공지 표9",
       "각인 슬롯 반영 없음",
     );
+  if (stone?.unlisted)
+    pending(
+      "초월의 가루",
+      "공지 표9 · 미세공/비유효 스톤 처리 준용",
+      "표9에 없는 활성화 포인트 분포 · 처리 기준 미확인",
+      "수량·대상 미확인",
+    );
   if (stone?.upgrade.kind === "value" && stone.upgrade.value.extra)
     pending(
       "추가 지급 아이템",

@@ -1,4 +1,4 @@
-/** Official notice 13608 (2026-11-25), table 9. */
+/** 공지 13608 본문 딜러 유효 각인 22종 = inven_20.png. */
 export const DEALER_ENGRAVINGS = [
   "각성",
   "결투의 대가",
@@ -23,7 +23,7 @@ export const DEALER_ENGRAVINGS = [
   "추진력",
   "타격의 대가",
 ] as const;
-/** Official notice 13608 (2026-11-25), table 9. */
+/** 공지 13608 본문 서포터 유효 각인 11종 = inven_20.png. 서포터 가능 클래스만 산정. */
 export const SUPPORT_ENGRAVINGS = [
   "각성",
   "구슬동자",
@@ -37,7 +37,7 @@ export const SUPPORT_ENGRAVINGS = [
   "최대 마나 증가",
   "폭발물 전문가",
 ] as const;
-/** 공지 13608 표9, 2026-11-25. [합계, 높은 포인트, 슬롯, 단계, 추가 지급] */
+/** 공지 13608 표9 = inven_19.png. [합계, 높은 포인트(null=무관), 슬롯 수, 단계, 추가 지급(+@)] */
 export const STONE_UPGRADE = [
   [4, 2, 1, 3, false],
   [4, 3, 1, 5, false],
@@ -47,6 +47,7 @@ export const STONE_UPGRADE = [
   [7, 4, 5, 7, false],
   [8, 4, 5, 7, true],
 ] as const;
+/** 표9 참고 열(7/7, 9/6, 10/8 ...)의 세공 노드 수 → 활성화 포인트. 6 미만은 공지에 없어 계산 불가. */
 export const NODE_TO_POINT: Readonly<Record<number, number>> = {
   6: 1,
   7: 2,

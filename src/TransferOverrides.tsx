@@ -1,6 +1,6 @@
 import { useId, useState, type RefObject } from "react";
 import { ESTHER_TABLE } from "./transfer/rules/esther";
-import { GEM_KIND_TIER } from "./transfer/rules/gem";
+import { gemTier } from "./transfer/gem";
 import { ARMOR_PAIRS } from "./transfer/rules/slots";
 import type { Ella, TransferInput, TransferOverrides } from "./transfer/types";
 
@@ -236,12 +236,7 @@ export function OverridesPanel({
         </div>
       </fieldset>
       {input.gems
-        .filter(
-          (gem) =>
-            gem.level === 8 &&
-            gem.kind &&
-            (GEM_KIND_TIER as Readonly<Record<string, number>>)[gem.kind] === 4,
-        )
+        .filter((gem) => gem.level === 8 && gemTier(gem) === 4)
         .map((gem) => {
           const source = value.gemSource?.[gem.slot]?.source ?? "normal";
           const bound =

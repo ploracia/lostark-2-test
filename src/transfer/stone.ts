@@ -9,12 +9,20 @@ import {
 import type { StoneIn, TransferOverrides } from "./types";
 
 const source = "공지 표9";
-const point = (level: number | null) =>
-  level !== null && Number.isInteger(level)
-    ? level >= 0 && level <= 4
-      ? level
-      : (NODE_TO_POINT[level] ?? null)
-    : null;
+/**
+ * "Lv.N"은 활성화 포인트(0~4), "활성도 +N"은 세공 노드 수(표9 참고 열)입니다.
+ * 단위를 모르는 옛 형식만 0~4를 포인트로, 그 이상을 노드 수로 해석합니다.
+ */
+const point = (
+  level: number | null,
+  unit: StoneIn["engravings"][number]["unit"],
+) => {
+  if (level === null || !Number.isInteger(level)) return null;
+  const asLevel = level >= 0 && level <= 4 ? level : null;
+  if (unit === "lv") return asLevel;
+  if (unit === "node") return NODE_TO_POINT[level] ?? null;
+  return asLevel ?? NODE_TO_POINT[level] ?? null;
+};
 export function convertStone(
   stone: StoneIn,
   className: string,
@@ -22,7 +30,7 @@ export function convertStone(
 ) {
   const positive = stone.engravings.filter((entry) => !entry.harmful);
   const names = positive.map((entry) => entry.name);
-  const parsed = positive.map((entry) => point(entry.level));
+  const parsed = positive.map((entry) => point(entry.level, entry.unit));
   const points =
     parsed.length === 2 && parsed[0] !== null && parsed[1] !== null
       ? ([parsed[0], parsed[1]] as const)
@@ -58,7 +66,11 @@ export function convertStone(
             extra: row?.[4] ?? false,
           },
           source,
-          "스톤 Lv 해석 미검증",
+          row
+            ? "스톤 Lv 해석 미검증"
+            : "표9에 없는 분포(합계 4 미만 등) · 각인 슬롯 반영 없음으로 추정",
         );
-  return { names, points, sum, validPair, upgrade, excluded };
+  // 표9에 없는 분포는 반영되지 않고 등급별 초월의 가루로 바뀌는 것으로 보입니다(공지 미세공·비유효 스톤 처리 준용).
+  const unlisted = Boolean(points && !excluded && !row);
+  return { names, points, sum, validPair, upgrade, excluded, unlisted };
 }

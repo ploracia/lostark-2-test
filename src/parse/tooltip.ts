@@ -14,6 +14,8 @@ export type ParsedTooltip = {
   engravings: {
     name: string;
     level: number | null;
+    /** "lv" = Lv.N(활성화 포인트), "node" = 활성도 +N(세공 노드 수). */
+    unit?: "lv" | "node";
     harmful: boolean;
     bonus: string | null;
   }[];
@@ -190,7 +192,9 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
             const text = plainText(raw).trim();
             const name = text.match(/\[([^\]]+)\]/)?.[1]?.trim();
             if (!name) continue;
-            const level = text.match(/(?:Lv\.|활성도\s*\+?)\s*(\d+)/i)?.[1];
+            const lv = text.match(/Lv\.\s*(\d+)/i)?.[1];
+            const node = text.match(/활성도\s*\+?\s*(\d+)/)?.[1];
+            const level = lv ?? node;
             const hex = colors(raw);
             const bonus =
               name.includes("레벨 보너스") || hex.includes("#73DC04")
@@ -200,6 +204,7 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
               engravings.push({
                 name,
                 level: level ? Number(level) : null,
+                unit: lv ? "lv" : node ? "node" : undefined,
                 harmful: name.includes("감소") || hex.includes("#FE2E2E"),
                 bonus,
               });
@@ -223,6 +228,7 @@ export function parseTooltip(raw?: string | null): ParsedTooltip | null {
         engravings.push({
           name,
           level: Number(level),
+          unit: "node",
           harmful: name.includes("감소"),
           bonus: null,
         });

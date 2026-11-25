@@ -329,6 +329,8 @@ export function CardSet({ data }: { data: Armory["ArmoryCard"] }) {
               className="tcard"
               data-grade={item.Grade}
               title={
+                item.Name +
+                " · " +
                 item.Grade +
                 " · " +
                 item.AwakeCount +
@@ -337,8 +339,13 @@ export function CardSet({ data }: { data: Armory["ArmoryCard"] }) {
                 " 각성"
               }
             >
-              <Picture key={item.Icon} src={item.Icon} className="item-image" />
-              <span className="card-name">{item.Name}</span>
+              <div className="tcard-art">
+                <Picture
+                  key={item.Icon}
+                  src={item.Icon}
+                  className="item-image"
+                />
+              </div>
               <div
                 className="awake"
                 aria-label={item.AwakeCount + "/" + item.AwakeTotal + " 각성"}
@@ -353,6 +360,7 @@ export function CardSet({ data }: { data: Armory["ArmoryCard"] }) {
                   ),
                 )}
               </div>
+              <span className="card-name">{item.Name}</span>
             </div>
           ))}
         </div>

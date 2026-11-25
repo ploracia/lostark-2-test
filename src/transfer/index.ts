@@ -2,10 +2,9 @@ import { gradeAccessory } from "./accessory";
 import { analyzeBracelet } from "./bracelet";
 import { convertEsther } from "./esther";
 import { average16, convertArmor, convertWeapon } from "./gear";
-import { convertGems } from "./gem";
+import { convertGems, gemTier } from "./gem";
 import { collectPayouts } from "./payouts";
 import { ESTHER_TABLE } from "./rules/esther";
-import { GEM_KIND_TIER } from "./rules/gem";
 import { RULES_VERSION } from "./rules/meta";
 import { ARMOR_PAIRS } from "./rules/slots";
 import { convertStone } from "./stone";
@@ -86,10 +85,7 @@ export function computeTransfer(
   if (
     input.gems.some(
       (gem) =>
-        gem.level === 8 &&
-        gem.kind &&
-        (GEM_KIND_TIER as Readonly<Record<string, number>>)[gem.kind] === 4 &&
-        !ov.gemSource?.[gem.slot],
+        gem.level === 8 && gemTier(gem) === 4 && !ov.gemSource?.[gem.slot],
     )
   )
     add(

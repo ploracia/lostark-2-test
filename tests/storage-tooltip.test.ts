@@ -85,6 +85,7 @@ describe("tooltips", () => {
     expect(parseTooltip(accessories[5].Tooltip)?.engravings).toContainEqual({
       name: "공격력 감소",
       level: 0,
+      unit: "lv",
       harmful: true,
       bonus: null,
     });
@@ -235,9 +236,21 @@ describe("tooltip parser against guide §4 structures", () => {
       },
     });
     expect(parseTooltip(raw)?.engravings).toEqual([
-      { name: "원한", level: 3, harmful: false, bonus: null },
-      { name: "예리한 둔기", level: 2, harmful: false, bonus: null },
-      { name: "공격속도 감소", level: 1, harmful: true, bonus: null },
+      { name: "원한", level: 3, unit: "lv", harmful: false, bonus: null },
+      {
+        name: "예리한 둔기",
+        level: 2,
+        unit: "lv",
+        harmful: false,
+        bonus: null,
+      },
+      {
+        name: "공격속도 감소",
+        level: 1,
+        unit: "lv",
+        harmful: true,
+        bonus: null,
+      },
     ]);
   });
 

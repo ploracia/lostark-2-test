@@ -1,4 +1,4 @@
-/** Official notice 13608 (2026-11-25), table 6. */
+/** 공지 13608 (2026-11-25) 표6 "딜러/서포터별 장신구 유효 옵션" = inven_18.png. [1·2옵션, 3옵션] */
 export const ACCESSORY_VALID_OPTIONS = {
   딜러: {
     목걸이: [
@@ -29,8 +29,13 @@ export const ACCESSORY_VALID_OPTIONS = {
     ],
   },
 } as const;
-/** 공지 13608 표5, 2026-11-25. */
+/** 공지 13608 대상 조건: 티어 4 고대/유물 중 품질 67 이상. */
 export const MIN_QUALITY = 67;
+/**
+ * 공지 13608 표5 "마력 주입 주문서 등급" = inven_17.png. 1·2옵션 쌍(상중/중상, 상하/하상은 정렬해 같은 키)
+ * + 3옵션 등급. 3옵션은 상상상·상상중일 때만 반영. 서포터 귀걸이는 3옵션 최대 생명력 상=2등급,
+ * 보호막%·회복% 상=3등급이며 1등급이 없습니다. 유물은 서포터 목걸이·반지 상상만 5등급.
+ */
 export const ACCESSORY_SCROLL_RULES = {
   regular: { 상상상: 1, 상상중: 2, 상상: 3, 상중: 4, 상하: 5, fallback: 6 },
   supportEarring: {
