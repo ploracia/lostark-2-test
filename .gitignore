@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env*
+*.log
+.wrangler/
+
+# Third-party screenshots kept locally only
+research/transfer/images/
+
+# Ark Passive tree data built from the Inven DB, kept locally only
+research/arkpassive/enlightenment.json
+research/arkpassive/evolution.json
+research/arkpassive/leap.json
+research/arkpassive/icon-verification.json

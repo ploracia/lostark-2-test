@@ -1,0 +1,5 @@
+# Hash routes arrive at / and use the landing page.
+/redirect-url.js /_redirect-url.js 200
+# Omit the destination query so Pages passes through the original query.
+/:first/* https://mokokoloa.pages.dev/_from-ark-lens/:first/:splat 301
+/:first https://mokokoloa.pages.dev/_from-ark-lens/:first 301

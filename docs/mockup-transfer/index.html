@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mokokoloa 이관 탭 목업</title>
+<!-- 정적 목업: 외부 호출 없음. 데이터는 fixtures/armory-sample.json 캐릭터, 값은 아래 compute()가 공지 13608 규칙표로 계산. 설계: docs/transfer-tab-design.md -->
+<style>
+:root{
+  --bg:#f4f5f8; --surface:#ffffff; --surface-2:#eef0f5; --line:#dde1ea;
+  --text:#1b1f2a; --text-2:#5b6375; --text-3:#9aa1b1;
+  --accent:#4b5bdc; --on-accent:#ffffff; --accent-soft:#e6e9fd; --danger:#d8443a; --warn:#c98a12; --ok:#1f9d6b;
+  --radius:14px; --shadow:0 1px 2px rgba(20,25,40,.06),0 4px 16px rgba(20,25,40,.05);
+  /* 등급 색상 토큰 (라이트) */
+  --g-normal:#8c93a3; --g-uncommon:#3d9a3a; --g-rare:#2d7fd6; --g-epic:#8a4bd8;
+  --g-legendary:#e0901b; --g-relic:#d65a1f; --g-ancient:#c9b27c; --g-esther:#1fb5ad;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1117; --surface:#171a23; --surface-2:#1f2330; --line:#2a2f3e;
+    --text:#e8eaf0; --text-2:#a3a9b8; --text-3:#6b7183;
+    --accent:#8391ff; --on-accent:#0f1117; --accent-soft:#252a4a; --danger:#ff6b60; --warn:#f0b43c; --ok:#3fcf94;
+    --shadow:none;
+    --g-normal:#a2a8b6; --g-uncommon:#69c165; --g-rare:#5aa8ff; --g-epic:#b07bff;
+    --g-legendary:#ffb03a; --g-relic:#ff7a3d; --g-ancient:#e6d3a3; --g-esther:#3fe0d6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1117; --surface:#171a23; --surface-2:#1f2330; --line:#2a2f3e;
+  --text:#e8eaf0; --text-2:#a3a9b8; --text-3:#6b7183;
+  --accent:#8391ff; --on-accent:#0f1117; --accent-soft:#252a4a; --danger:#ff6b60; --warn:#f0b43c; --ok:#3fcf94;
+  --shadow:none;
+  --g-normal:#a2a8b6; --g-uncommon:#69c165; --g-rare:#5aa8ff; --g-epic:#b07bff;
+  --g-legendary:#ffb03a; --g-relic:#ff7a3d; --g-ancient:#e6d3a3; --g-esther:#3fe0d6;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- 목업 전용 내비게이션 (실제 앱에는 없음) ---------- */
+.mock-nav{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;background:var(--surface-2);border-bottom:1px dashed var(--line);font-size:12px;color:var(--text-2);align-items:center}
+.mock-nav b{margin-right:4px}
+.mock-nav button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;cursor:pointer}
+.mock-nav button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+/* ---------- 상단 바 ---------- */
+.topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:10px 20px;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.logo i{width:22px;height:22px;border-radius:7px;background:conic-gradient(from 210deg,var(--accent),var(--g-esther),var(--g-legendary),var(--accent));display:inline-block}
+.search{flex:1;max-width:520px;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:0 6px 0 12px}
+.search:focus-within{border-color:var(--accent);background:var(--surface)}
+.search input{flex:1;border:0;background:transparent;padding:9px 0;outline:0;min-width:0}
+.search kbd{font-size:11px;color:var(--text-3);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.danger{color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);cursor:pointer;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.dot.off{background:var(--text-3)} .dot.bad{background:var(--danger)}
+.spacer{flex:1}
+
+main{max-width:1240px;margin:0 auto;padding:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.card h2{font-size:14px;margin:0 0 12px;display:flex;align-items:center;gap:8px;font-weight:700}
+.card h2 .sub{font-weight:500;color:var(--text-3);font-size:12px}
+.card h2 .right{margin-left:auto;font-weight:500}
+.muted{color:var(--text-2)} .faint{color:var(--text-3)}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;line-height:1.6}
+
+/* ---------- 등급 ---------- */
+[data-grade]{--g:var(--g-normal)}
+[data-grade="고급"]{--g:var(--g-uncommon)} [data-grade="희귀"]{--g:var(--g-rare)}
+[data-grade="영웅"]{--g:var(--g-epic)} [data-grade="전설"]{--g:var(--g-legendary)}
+[data-grade="유물"]{--g:var(--g-relic)} [data-grade="고대"]{--g:var(--g-ancient)}
+[data-grade="에스더"]{--g:var(--g-esther)}
+.ico{position:relative;width:48px;height:48px;flex:none;border-radius:10px;overflow:hidden;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--g) 55%,#000 0%),color-mix(in srgb,var(--g) 30%,#111));
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--g) 80%,#fff 20%);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.ico.sm{width:36px;height:36px;font-size:12px;border-radius:8px}
+.ico .tier{position:absolute;top:2px;right:3px;font-size:9px;font-weight:700;opacity:.85}
+.ico .badge{position:absolute;left:0;right:0;bottom:0;font-size:10px;text-align:center;background:rgba(0,0,0,.55);line-height:15px;font-weight:700}
+.gtext{color:var(--g);font-weight:700}
+.gpill{background:color-mix(in srgb,var(--g) 18%,transparent);color:var(--g)}
+/* 품질 색: 0-9 / 10-29 / 30-69 / 70-89 / 90-99 / 100 */
+.q{font-size:10px;font-weight:700;padding:0 5px;border-radius:4px;color:#fff}
+.q0{background:#c0392b}.q1{background:#c79a1b}.q2{background:#3d9a3a}.q3{background:#2d7fd6}.q4{background:#8a4bd8}.q5{background:#e0901b}
+.opt-hi{background:color-mix(in srgb,var(--g-legendary) 22%,transparent);color:var(--g-legendary)}
+.opt-mid{background:color-mix(in srgb,var(--g-epic) 20%,transparent);color:var(--g-epic)}
+.opt-lo{background:color-mix(in srgb,var(--g-rare) 20%,transparent);color:var(--g-rare)}
+
+/* ---------- 화면: API 키 ---------- */
+.key-wrap{max-width:640px;margin:24px auto;display:grid;gap:16px}
+.key-hero h1{font-size:24px;margin:0 0 6px;letter-spacing:-.02em}
+.field{display:grid;gap:6px}
+.field label{font-weight:600;font-size:13px}
+.keybox{display:flex;gap:8px}
+.keybox input{flex:1;min-width:0;font-family:ui-monospace,Consolas,monospace;font-size:13px;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:10px 12px;outline:0}
+.keybox input:focus{border-color:var(--accent);background:var(--surface)}
+.radio-row{display:grid;gap:8px}
+.radio{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.radio:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.radio input{margin-top:3px;accent-color:var(--accent)}
+.radio small{display:block;color:var(--text-2)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.notice{border-radius:10px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.notice.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok)}
+.notice.warn{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.notice.err{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)}
+.steps{margin:0;padding-left:20px;color:var(--text-2)} .steps li{margin:4px 0}
+a{color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.kv dt{color:var(--text-2)} .kv dd{margin:0}
+
+/* ---------- 화면: 캐릭터 ---------- */
+.profile{display:grid;grid-template-columns:180px 1fr auto;gap:20px;align-items:center;margin-bottom:16px;position:relative;overflow:hidden}
+.profile::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 200px at 0% 0%,var(--accent-soft),transparent 70%);pointer-events:none}
+.portrait{position:relative;width:180px;height:200px;border-radius:12px;background:linear-gradient(160deg,var(--surface-2),color-mix(in srgb,var(--accent) 25%,var(--surface-2)));display:grid;place-items:end center;overflow:hidden}
+.portrait span{font-size:72px;font-weight:900;opacity:.18;line-height:1;margin-bottom:28px}
+.portrait small{position:absolute;bottom:8px;font-size:11px;color:var(--text-3)}
+.pmeta{position:relative;min-width:0}
+.pmeta .line1{display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--text-2);font-size:13px}
+.pmeta h1{font-size:28px;margin:4px 0 2px;letter-spacing:-.02em;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pmeta h1 small{font-size:14px;color:var(--text-2);font-weight:500}
+.bignums{display:flex;gap:28px;margin:12px 0;flex-wrap:wrap}
+.bignums div b{display:block;font-size:22px;letter-spacing:-.01em}
+.bignums div span{font-size:12px;color:var(--text-2)}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{background:var(--surface-2);border-radius:8px;padding:3px 9px;font-size:12px}
+.stat b{margin-left:4px}
+.pside{position:relative;display:grid;gap:8px;align-self:start;justify-items:end}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+.col{display:grid;gap:16px;min-width:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.row{display:flex;gap:10px;align-items:center;min-width:0}
+.list{display:grid;gap:10px}
+.tabs{display:inline-flex;background:var(--surface-2);border-radius:8px;padding:2px;margin-left:auto}
+.tabs button{border:0;background:transparent;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--text-2)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow)}
+.equip{display:grid;gap:10px}
+.eq .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq .meta{font-size:12px;color:var(--text-2);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.acc .opts{display:grid;gap:2px;font-size:12px}
+.acc .opts div{display:flex;gap:6px;align-items:center}
+.gems{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
+.gem{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--text-2);text-align:center}
+.gem .ico{width:46px;height:46px;border-radius:50% 50% 12px 12px}
+.gem .lv{position:absolute;top:2px;left:4px;font-size:11px;font-weight:800}
+.engr .ico{border-radius:50%}
+.lvl{display:flex;gap:3px}
+.lvl i{width:8px;height:8px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
+.lvl i.on{background:var(--g);border-color:var(--g)}
+.ap-points{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ap-points div{background:var(--surface-2);border-radius:10px;padding:8px;text-align:center}
+.ap-points b{display:block;font-size:20px}
+.ap-points span{font-size:11px;color:var(--text-2)}
+.ap-points div:nth-child(1) b{color:var(--g-legendary)} .ap-points div:nth-child(2) b{color:var(--g-rare)} .ap-points div:nth-child(3) b{color:var(--g-uncommon)}
+.cores{display:grid;gap:8px}
+.core{display:flex;gap:10px;align-items:center}
+.core .gemdots{display:flex;gap:3px;margin-left:auto}
+.core .gemdots i{width:10px;height:10px;transform:rotate(45deg);border-radius:2px;background:var(--g);opacity:.9}
+.core .gemdots i.off{background:var(--line)}
+.cardset{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
+.tcard{aspect-ratio:3/4.3;border-radius:8px;position:relative;background:linear-gradient(170deg,color-mix(in srgb,var(--g) 45%,#222),#151821);box-shadow:inset 0 0 0 1.5px var(--g);display:grid;place-items:center;color:#fff;font-size:10px;text-align:center;padding:4px}
+.tcard .awake{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:1.5px}
+.tcard .awake i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.25)}
+.tcard .awake i.on{background:#ffd76a}
+.divider{height:1px;background:var(--line);margin:12px 0}
+.small{font-size:12px}
+.tip{position:relative}
+.tip:hover::after{content:attr(data-tip);position:absolute;left:0;top:100%;margin-top:6px;z-index:10;background:var(--text);color:var(--bg);font-size:11.5px;padding:6px 8px;border-radius:7px;width:max-content;max-width:260px;white-space:normal}
+
+/* 원정대 드로어 */
+.drawer{position:fixed;inset:0 0 0 auto;width:min(380px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-8px 0 30px rgba(0,0,0,.15);z-index:20;padding:18px;overflow:auto;transform:translateX(100%);transition:transform .2s}
+.drawer.open{transform:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:19;display:none}
+.scrim.open{display:block}
+.sib-server{font-size:12px;color:var(--text-3);margin:14px 0 6px;font-weight:700}
+.sib{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.sib:hover{background:var(--surface-2)}
+.sib.cur{border-color:var(--accent);background:var(--accent-soft)}
+.sib .ilv{margin-left:auto;font-weight:700}
+
+/* ---------- 상태 화면 ---------- */
+.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.state{display:grid;gap:10px;justify-items:start}
+.state .big{font-size:30px;line-height:1}
+.state h3{margin:0;font-size:16px}
+.state p{margin:0;color:var(--text-2);font-size:13px}
+.state .tag{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--text-3)}
+.skel{background:linear-gradient(90deg,var(--surface-2) 0%,var(--line) 50%,var(--surface-2) 100%);background-size:200% 100%;animation:sh 1.3s infinite;border-radius:8px}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}.drawer{transition:none}}
+.meter{width:100%;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--warn)}
+
+[hidden]{display:none!important}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:1024px){
+  .grid{grid-template-columns:1fr}
+  .grid>.col:first-child{order:2}
+}
+@media (max-width:720px){
+  main{padding:12px 16px}
+  .topbar{padding:8px 16px;flex-wrap:wrap}
+  .logo b{display:none}
+  .search{order:3;flex-basis:100%;max-width:none}
+  .search kbd{display:none}
+  .profile{grid-template-columns:96px 1fr;gap:14px}
+  .portrait{width:96px;height:110px}
+  .portrait span{font-size:40px;margin-bottom:18px}
+  .pside{grid-column:1/-1;justify-items:stretch;grid-auto-flow:column}
+  .pmeta h1{font-size:22px}
+  .bignums{gap:18px}.bignums div b{font-size:18px}
+  .two{grid-template-columns:1fr}
+  .cardset{grid-template-columns:repeat(3,1fr)}
+  .keybox{flex-wrap:wrap}.keybox input{flex-basis:100%}
+}
+
+/* ================= 이관 탭 추가 스타일 (기존 토큰만 사용) ================= */
+.profile{margin-bottom:8px}
+.view-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px}
+.view-tabs a{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;font-size:14px;font-weight:600;color:var(--text-2);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
+.view-tabs a[aria-current="page"]{color:var(--text);border-bottom-color:var(--accent)}
+.view-tabs a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:6px}
+.new-pill{background:var(--accent-soft);color:var(--accent);font-size:10.5px}
+
+.ev{display:inline-flex;align-items:center;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;line-height:1.6;white-space:nowrap;border:1px solid transparent}
+.ev-official{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.ev-estimated{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.ev-unknown{border:1px dashed var(--text-3);color:var(--text-2)}
+.na{color:var(--text-2);font-weight:600}
+
+.disclaimer{margin-bottom:16px;align-items:center;flex-wrap:wrap}
+.disclaimer b{font-weight:700}
+
+.summary{display:grid;grid-template-columns:auto auto auto 1fr;gap:6px 24px;align-items:center;margin-bottom:16px}
+.summary .lbl{font-size:12px;color:var(--text-2)}
+.summary .big{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.summary .big-arrow{font-size:22px;color:var(--text-3)}
+.summary .after .big{color:var(--accent)}
+.delta{font-size:13px;font-weight:700;margin-left:6px}
+.delta.up{color:var(--ok)} .delta.down{color:var(--danger)}
+.summary .counts{justify-self:end;display:flex;gap:6px;flex-wrap:wrap;align-self:start}
+.summary .sub{grid-column:1/-1;font-size:12px;color:var(--text-2)}
+.summary .sub .warn-line{color:var(--warn)}
+
+.conv{display:grid;gap:0}
+.conv-row{display:grid;grid-template-columns:minmax(190px,1fr) 22px 2.1fr;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.conv-row:first-child{border-top:0;padding-top:0}
+.conv-row .arrow{color:var(--text-3);text-align:center;font-size:16px}
+.conv-row .arrow.down{color:var(--danger)}
+.src .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.src .meta,.dst-slot .meta{font-size:12px;color:var(--text-2);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dst{display:grid;gap:6px}
+.dst-side{display:grid;grid-template-columns:28px repeat(auto-fit,minmax(150px,1fr));gap:6px;align-items:stretch}
+.dst-side .side-lbl{font-size:10.5px;color:var(--text-3);align-self:center}
+.dst-slot{display:flex;gap:8px;align-items:center;background:var(--surface-2);border-radius:10px;padding:6px 8px;min-width:0;flex:1 1 150px}
+.dst-slot .t{font-size:12.5px;font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dst-slot .new{font-size:10px;color:var(--accent);font-weight:700}
+.conv-note{grid-column:1/-1;font-size:11.5px;color:var(--text-2);margin-top:-2px}
+
+.slot16{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.slot16 h3{font-size:12px;color:var(--text-3);margin:0 0 6px;font-weight:700}
+.slot16 .cells{display:grid;gap:6px}
+.cell{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:5px 8px;min-width:0}
+.cell.is-new{border-style:dashed;border-color:var(--accent)}
+.cell .nm{font-size:12px;font-weight:600;width:44px;flex:none}
+.cell .lv{font-size:13px;font-weight:700;margin-left:auto}
+.cell .hn{font-size:11px;color:var(--text-2);width:54px;text-align:right;flex:none}
+.cell .gtext{font-size:11px}
+
+.scroll-row{display:grid;grid-template-columns:minmax(170px,1fr) 22px 1.3fr;gap:10px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.scroll-row:first-child{border-top:0;padding-top:0}
+.scroll-row .arrow{color:var(--text-3);text-align:center;padding-top:10px}
+.scroll-row .res b{font-size:13px}
+.scroll-row .why{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.opt-line{display:flex;gap:6px;align-items:center;font-size:12px;flex-wrap:wrap}
+
+.tier-table{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 10px;font-size:12px;align-items:center;margin-top:10px}
+.tier-table .h{color:var(--text-3);font-weight:700;font-size:11px}
+
+.engr-slots{display:flex;gap:10px;margin:6px 0 10px}
+.engr-slots i{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:800;border:1.5px dashed var(--line);color:var(--text-3)}
+.engr-slots i.on{border:1.5px solid var(--g-relic);background:color-mix(in srgb,var(--g-relic) 16%,transparent);color:var(--g-relic)}
+
+.gem-conv{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.gem-conv .g{display:grid;justify-items:center;gap:2px;font-size:10.5px;color:var(--text-2);text-align:center;background:var(--surface-2);border-radius:10px;padding:6px 2px}
+.gem-conv .g b{font-size:12px;color:var(--text)}
+.gem-conv .g .to{color:var(--accent);font-weight:700}
+.gem-conv .g.choice{outline:1.5px dashed var(--warn)}
+
+.pay{display:grid;gap:8px}
+.pay-row{display:grid;grid-template-columns:1fr;gap:2px;font-size:12.5px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.pay-row:last-child{border-bottom:0;padding-bottom:0}
+.pay-row .basis{font-size:11.5px;color:var(--text-2)}
+.pay-row .amt{font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+details.card>summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::before{content:"▸";color:var(--text-3);transition:transform .15s}
+details.card[open]>summary::before{transform:rotate(90deg)}
+details.card>summary .sub{font-weight:500;color:var(--text-3);font-size:12px}
+.ov-form{display:grid;gap:14px;margin-top:14px}
+.ov-form fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;display:grid;gap:8px}
+.ov-form legend{font-size:12px;font-weight:700;padding:0 4px}
+.ov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 8px}
+.ov-grid label,.ov-form label{font-size:11.5px;color:var(--text-2);display:grid;gap:2px}
+.ov-form input,.ov-form select{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:5px 7px;font-size:12.5px;min-width:0;width:100%}
+.ov-form .hint{font-size:11px;color:var(--text-3);margin:0}
+.assume{margin:0;padding-left:18px;display:grid;gap:6px;font-size:12.5px}
+.assume a{font-size:11.5px;margin-left:4px}
+.out-scope{font-size:12.5px;color:var(--text-2)}
+.out-scope summary{font-weight:700;color:var(--text)}
+
+.transfer-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.esther-empty{font-size:12.5px;color:var(--text-2)}
+.kv2{display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;font-size:12.5px;align-items:center}
+.kv2 dt{color:var(--text-2)} .kv2 dd{margin:0}
+.current-placeholder{text-align:center;padding:40px 18px;color:var(--text-2)}
+
+@media (max-width:1024px){
+  .summary{grid-template-columns:auto auto auto}
+  .summary .counts{grid-column:1/-1;justify-self:start}
+}
+@media (max-width:720px){
+  .view-tabs a{flex:1;justify-content:center}
+  .summary{grid-template-columns:1fr auto 1fr;gap:4px 10px}
+  .summary .big{font-size:21px}
+  .summary .big-arrow{font-size:16px}
+  .delta{display:block;margin-left:0}
+  .conv-row,.scroll-row{grid-template-columns:1fr}
+  .conv-row .arrow,.scroll-row .arrow{text-align:left;padding:0;transform:rotate(90deg);width:16px;justify-self:start;margin-left:14px}
+
+  .dst{grid-template-columns:1fr 1fr}
+  .dst-side{display:contents}
+  .dst-side .side-lbl{display:none}
+  .conv-row .arrow{display:none}
+  .dst-slot{padding:5px 6px;gap:6px}
+  .dst-slot .ico.sm{width:28px;height:28px;font-size:10px}
+  .slot16{gap:8px}
+  .cell{padding:4px 6px;gap:6px}
+  .cell .ico.sm{width:28px;height:28px;font-size:10px}
+  .cell .nm{width:auto;font-size:11px}
+  .cell .hn{display:none}
+  .cell .gtext{display:none}
+  .ov-grid{grid-template-columns:1fr 1fr}
+  .tier-table{grid-template-columns:1.5fr 1fr 1fr;font-size:11.5px;gap:4px 6px}
+  .kv2{grid-template-columns:auto 1fr}
+  .kv2 dd.e{grid-column:2}
+}
+</style>
+</head>
+<body>
+
+<div class="mock-nav" role="toolbar" aria-label="목업 화면 전환">
+  <b>목업</b>
+  <button data-go="current" aria-pressed="false">현재 탭</button>
+  <button data-go="transfer" aria-pressed="true">이관 탭</button>
+  <button data-go="esther" aria-pressed="false">이관 탭 · 에스더 예시</button>
+  <span class="spacer"></span>
+  <span>테마</span>
+  <button data-theme-set="light">라이트</button>
+  <button data-theme-set="dark">다크</button>
+</div>
+
+<header class="topbar">
+  <div class="logo"><i></i><b>Mokokoloa</b></div>
+  <form class="search" role="search" onsubmit="return false">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input aria-label="캐릭터 이름" placeholder="캐릭터 이름을 입력하세요" value="은하수바리케이드">
+    <kbd>/</kbd>
+    <button class="btn primary" style="padding:5px 12px">검색</button>
+  </form>
+  <span class="spacer"></span>
+  <span class="chip num">잔여 ≈ 98/100</span>
+  <button class="chip"><span class="dot"></span>키 …a1f3</button>
+</header>
+
+<main>
+  <section class="card profile" id="profile"></section>
+  <nav class="view-tabs" aria-label="캐릭터 보기">
+    <a href="#current" id="tab-current">현재</a>
+    <a href="#transfer" id="tab-transfer">이관 <span class="pill new-pill">2부</span></a>
+  </nav>
+
+  <div id="view-current" hidden>
+    <div class="card current-placeholder">
+      <p><b>현재 탭</b>은 기존 캐릭터 화면 그대로입니다.</p>
+      <p class="small">기존 목업: <code>docs/mockup/index.html</code> · 이 목업은 이관 탭만 그립니다.</p>
+    </div>
+  </div>
+
+  <div id="view-transfer"></div>
+</main>
+
+<script>
+/* ===================== 샘플 데이터 =====================
+   fixtures/armory-sample.json 의 값을 옮긴 것. _p 는 parseTooltip() 결과에 해당. */
+const SAMPLE={
+  profile:{ServerName:"루페온",CharacterName:"은하수바리케이드",CharacterLevel:70,CharacterClassName:"홀리나이트",
+    ItemAvgLevel:"1,742.50",CombatPower:"2,518.37",ExpeditionLevel:312,Title:"빛을 지키는 자",HonorPoint:1845,
+    GuildName:"새벽순찰대",TownName:"고요한 등대",TownLevel:70,
+    Stats:[["치명","612"],["특화","1876"],["신속","95"],["제압","74"],["인내","80"],["숙련","78"]]},
+  equipment:[
+    {Type:"무기",Name:"+23 광휘의 수호 검",Grade:"고대",_p:{quality:100,tier:4,itemLevel:1790,advanced:null}},
+    {Type:"투구",Name:"+20 광휘의 수호 투구",Grade:"고대",_p:{quality:96,tier:4,itemLevel:1775,advanced:20}},
+    {Type:"상의",Name:"+20 광휘의 수호 상의",Grade:"고대",_p:{quality:88,tier:4,itemLevel:1775,advanced:null}},
+    {Type:"하의",Name:"+20 광휘의 수호 하의",Grade:"고대",_p:{quality:91,tier:4,itemLevel:1775,advanced:null}},
+    {Type:"장갑",Name:"+19 광휘의 수호 장갑",Grade:"고대",_p:{quality:74,tier:4,itemLevel:1770,advanced:null}},
+    {Type:"어깨",Name:"+20 광휘의 수호 견갑",Grade:"고대",_p:{quality:100,tier:4,itemLevel:1775,advanced:null}},
+    {Type:"목걸이",Name:"황혼의 별 목걸이",Grade:"고대",_p:{quality:82,tier:4,options:[["상","추가 피해 +2.60%"],["중","적에게 주는 피해 +1.20%"],["하","공격력 +80"]]}},
+    {Type:"귀걸이",Name:"황혼의 별 귀걸이",Grade:"고대",_p:{quality:67,tier:4,options:[["상","무기 공격력 +3.00%"],["중","공격력 +0.95%"]]}},
+    {Type:"귀걸이",Name:"황혼의 별 귀걸이",Grade:"유물",_p:{quality:45,tier:4,options:[["중","무기 공격력 +1.80%"],["하","최대 생명력 +3250"]]}},
+    {Type:"반지",Name:"황혼의 별 반지",Grade:"고대",_p:{quality:93,tier:4,options:[["상","치명타 적중률 +1.55%"],["중","치명타 피해 +2.40%"]]}},
+    {Type:"반지",Name:"황혼의 별 반지",Grade:"고대",_p:{quality:58,tier:4,options:[["상","치명타 피해 +4.00%"],["하","아군 공격력 강화 +1.35%"]]}},
+    {Type:"어빌리티 스톤",Name:"위대한 비상의 돌",Grade:"고대",_p:{engravings:[["원한",3,false],["아드레날린",2,false],["공격력 감소",0,true]]}},
+    {Type:"팔찌",Name:"찬란한 구원자의 팔찌",Grade:"고대",_p:{tier:4,bracelet:[["changeable","상","타대 스킬 피해 +3.5%"],["locked","중","치명 +84"],["locked","중","특화 +101"]]}}
+  ],
+  gems:[[0,"겁화",10],[1,"겁화",10],[2,"겁화",9],[3,"겁화",9],[4,"겁화",8],[5,"작열",10],[6,"작열",9],[7,"작열",9],[8,"작열",8],[9,"작열",8],[10,"작열",7]],
+  karma:[["진화","6랭크 25레벨"],["깨달음","6랭크 19레벨"],["도약","5랭크 20레벨"]]
+};
+/* #esther 예시: 장착 무기를 에스더 무기(진화 8, 아이템 레벨 1715, 엘라 툴팁 미확인)로 바꿈 */
+const ESTHER_WEAPON={Type:"무기",Name:"+8 빛의 수호자 : 극",Grade:"에스더",_p:{quality:null,tier:4,itemLevel:1715,advanced:null,ella:null}};
+
+/* ===================== 규칙 표 (공지 13608) ===================== */
+const NOTICE="https://lostark.game.onstove.com/News/Notice/Views/13608";
+const RULES_VERSION="2026-11-25 (공지 13608)";
+// 표1: [초과, 이하, 티어, 등급, 연마, 신규 ilvl]
+const GEAR=[[50,100,1,"고급",0,100],[100,150,1,"희귀",0,150],[150,200,1,"영웅",0,200],[200,250,1,"전설",0,250],
+[250,600,2,"일반",0,600],[600,700,2,"고급",0,700],[700,800,2,"희귀",0,800],[800,900,2,"영웅",0,900],[900,1000,2,"전설",0,1000],
+[1000,1200,3,"일반",0,1200],[1200,1300,3,"고급",0,1300],[1300,1400,3,"희귀",0,1400],[1400,1500,3,"영웅",0,1500],[1500,1600,3,"전설",0,1600],
+[1600,1675,4,"고급",0,1675],[1675,1680,4,"고급",1,1680],[1680,1685,4,"고급",2,1685],[1685,1690,4,"고급",3,1690],[1690,1695,4,"고급",4,1695],
+[1695,1700,4,"희귀",0,1700],[1700,1705,4,"희귀",1,1705],[1705,1710,4,"희귀",2,1710],[1710,1715,4,"희귀",3,1715],[1715,1720,4,"희귀",4,1720],
+[1720,1725,4,"영웅",0,1725],[1725,1730,4,"영웅",1,1730],[1730,1735,4,"영웅",2,1735],[1735,1740,4,"영웅",3,1740],[1740,1745,4,"영웅",4,1745],
+[1745,1750,4,"전설",0,1750],[1750,1755,4,"전설",1,1755],[1755,1760,4,"전설",2,1760],[1760,1765,4,"전설",3,1765],[1765,1770,4,"전설",4,1770],
+[1770,1775,4,"유물",2,1785],[1775,1780,4,"유물",3,1790],[1780,1785,4,"유물",4,1795],
+[1785,1790,4,"고대",0,1800],[1790,1795,4,"고대",2,1810],[1795,1800,4,"고대",3,1815]];
+// 표2·3·4: key 진화_엘라 → [기존 ilvl, 신규 엘라, 연마, 신규 ilvl, 무기 슬롯 재련, 기운, 키트]
+const ESTHER={"0_0":[1100,1,0,1100,0,0,0],"1_0":[1200,1,0,1100,0,1,10],"2_0":[1300,1,0,1100,0,3,310],"3_0":[1400,1,0,1100,0,8,810],
+"4_0":[1500,1,0,1100,0,18,1810],"5_0":[1600,1,0,1100,0,28,3310],"6_0":[1625,2,0,1625,0,20,3000],"7_0":[1635,2,0,1625,0,40,7000],
+"6_1":[1650,2,0,1625,9,40,11500],"7_1":[1665,2,0,1625,9,60,15500],"6_2":[1675,2,0,1625,9,60,20000],"8_0":[1645,2,0,1625,11,70,12000],
+"7_2":[1695,3,0,1735,12,20,12000],"7_3":[1785,3,0,1735,14,20,14500],"8_1":[1680,3,0,1735,14,30,8500],"8_2":[1715,3,0,1735,18,50,17000],
+"8_3":[1775,3,0,1735,20,50,19500],"9_2":[1745,3,0,1735,22,80,24000],"9_3":[1800,4,0,1840,25,20,10500],"10_3":[1830,4,5,1865,25,0,0]};
+const ARMOR_PAIRS=[["투구","투구","목걸이"],["어깨","견갑","귀걸이1"],["상의","상의","귀걸이2"],["하의","하의","반지1"],["장갑","장갑","반지2"]];
+const WEAPON_LEFT=["무기","완갑","허리띠"], WEAPON_RIGHT=["성물","인장","팔찌"];
+const LAYOUT_LEFT=["투구","견갑","상의","허리띠","하의","장갑","무기","완갑"];
+const LAYOUT_RIGHT=["목걸이","귀걸이1","귀걸이2","반지1","반지2","팔찌","성물","인장"];
+const NEW_SLOTS=new Set(["허리띠","성물","인장"]);
+const SUPPORT_CLASSES=new Set(["바드","도화가","홀리나이트","발키리"]);
+// 표6 (키 = 옵션명에서 " 효과" 제거 + "%" 또는 "+")
+const ACC_OPTS={
+  딜러:{목걸이:[["추가 피해%","적에게 주는 피해%"],["공격력+","무기 공격력+"]],
+        귀걸이:[["공격력%","무기 공격력%"],["공격력+","무기 공격력+"]],
+        반지:[["치명타 적중률%","치명타 피해%"],["공격력+","무기 공격력+"]]},
+  서포터:{목걸이:[["낙인력%","게이지 획득량%"],["무기 공격력+","최대 생명력+"]],
+        귀걸이:[["무기 공격력%","무기 공격력+"],["최대 생명력+","파티원 보호막%","파티원 회복%"]],
+        반지:[["아군 공격력 강화%","아군 피해량 강화%"],["무기 공격력+","최대 생명력+"]]}};
+const DEALER_ENGR=new Set("각성,결투의 대가,기습의 대가,달인의 저력,돌격대장,마나 효율 증가,바리케이드,부러진 뼈,속전속결,슈퍼 차지,시선 집중,아드레날린,안정된 상태,약자 무시,에테르 포식자,예리한 둔기,원한,저주받은 인형,정밀 단도,질량 증가,추진력,타격의 대가".split(","));
+const SUPPORT_ENGR=new Set("각성,구슬동자,급소 타격,마나의 흐름,분쇄의 주먹,위기 모면,전문의,정기 흡수,중갑 착용,최대 마나 증가,폭발물 전문가".split(","));
+const GEM_TIER={멸화:3,홍염:3,겁화:4,작열:4,광휘:4};
+/* 표7·8 (목업은 픽스처 옵션에 필요한 일부 키워드만) */
+const BRACELET_DEALER=[[/^(치명|특화|신속) \+/,"2티어+"],[/타대|방향성 공격이 아닌|백어택|헤드어택/,"2티어"],[/^(추가 피해|적에게 주는 피해|치명타 피해|치명타 적중률)/,"2티어"],[/^(힘|민첩|지능) \+/,"5티어"]];
+const BRACELET_SUPPORT=[[/^(특화|신속) \+/,"2티어"],[/아군 (피해량|공격력) 강화/,"2티어"],[/^(힘|민첩|지능) \+/,"4티어"]];
+
+/* ===================== 근거 도우미 ===================== */
+const OFF="official", EST="estimated", UNK="unknown";
+const RANKV={official:2,estimated:1,unknown:0};
+const weakest=(...l)=>l.reduce((a,b)=>RANKV[b]<RANKV[a]?b:a,OFF);
+const val=(value,level,source,note)=>({kind:"value",value,ev:{level,source,note}});
+const rng=(min,max,source,note)=>({kind:"range",min,max,ev:{level:EST,source,note}});
+const none=(label,source,note)=>({kind:"none",label,ev:{level:UNK,source,note}});
+
+/* ===================== 계산 (src/transfer 축약판) ===================== */
+function mapGear(ilvl){
+  const r=GEAR.find(([lo,hi])=>ilvl>lo&&ilvl<=hi);
+  return r?{tier:r[2],grade:r[3],polish:r[4],ilvl:r[5]}:null;
+}
+const honingOf=n=>{const m=n.match(/^\+(\d+)\s/);return m?+m[1]:null};
+function keyOf(text){const m=text.match(/^(.+?)\s*\+[\d,.]+(%?)$/);if(!m)return null;return m[1].replace(/ 효과$/,"").replace(/^(세레나데, 신앙, 조화 )/,"")+(m[2]?"%":"+")}
+function gradeAccessory(a,cls){
+  const p=a._p;
+  if(p.tier<=3) return {outcome:"remove",label:"제거",why:"티어 3 이하 장신구는 교체 지급 없음",ev:OFF};
+  if(p.quality<67) return {outcome:"shard",label:"영롱한 보석 파편",why:`품질 ${p.quality} (67 미만) → 파편, 수량 미확인`,ev:OFF};
+  const part=a.Type;
+  const results=[];
+  for(const role of ["딜러","서포터"]){
+    const [k12,k3]=ACC_OPTS[role][part];
+    const o12=p.options.filter(([,t])=>k12.includes(keyOf(t))).map(([r])=>r).sort((x,y)=>"상중하".indexOf(x)-"상중하".indexOf(y));
+    const o3=p.options.find(([,t])=>k3.includes(keyOf(t)));
+    const o3r=o3?.[0], o3k=o3?keyOf(o3[1]):null;
+    let g=null, unk=false;
+    if(a.Grade==="유물"){ if(role==="서포터"&&part!=="귀걸이"&&o12.join("")==="상상") g=5; }
+    else if(a.Grade==="고대"){
+      if(o12.length>=2){
+        const s=o12.slice(0,2).join("");
+        if(role==="서포터"&&part==="귀걸이"){
+          g=s==="상상"?(o3r==="상"&&o3k==="최대 생명력+"?2:o3r==="상"?3:o3r==="중"?4:5):6;
+        }else{
+          g=s==="상상"?(o3r==="상"?1:o3r==="중"?2:3):s==="상중"?4:s==="상하"?5:6;
+        }
+      }else if(o12.length===1) unk=true;
+    }
+    results.push({role,g,unk,o12,o3r});
+  }
+  const ok=results.filter(r=>r.g!=null).sort((x,y)=>x.g-y.g);
+  if(ok.length){
+    const best=ok[0];
+    const dealerOnlyOnSupport=best.role==="서포터"&&!SUPPORT_CLASSES.has(cls);
+    const s=best.o12.slice(0,2).join("/");
+    const used3=(s==="상/상")&&best.o3r&&best.o3r!=="하";
+    return {outcome:"scroll",grade:best.g,label:`${part} 마력 주입 주문서 ${best.g}등급`,
+      why:`${best.role} 기준 1·2옵션 ${s}${used3?" + 3옵션 "+best.o3r:""} → ${best.g}등급`+(s!=="상/상"?" (3옵션은 상/상/상·상/상/중일 때만 반영)":""),
+      ev:dealerOnlyOnSupport?EST:OFF};
+  }
+  if(results.some(r=>r.unk)) return {outcome:"unknown",label:"6등급 또는 영롱한 보석 파편",why:"유효 1·2옵션이 1줄뿐 — 공지에 경계 미명시",ev:UNK};
+  return {outcome:"shard",label:"영롱한 보석 파편",why:"유효 옵션 없음 → 파편, 수량 미확인",ev:OFF};
+}
+function analyzeBracelet(b,cls){
+  const p=b._p, sup=SUPPORT_CLASSES.has(cls);
+  if(p.tier<=3) return {eligible:"제거 (티어 3)",ev:OFF,tiers:[]};
+  const hasEffect=p.bracelet.some(([k])=>k==="changeable");
+  const tiers=p.bracelet.map(([k,r,t])=>({text:t,rank:r,
+    dealer:(BRACELET_DEALER.find(([re])=>re.test(t))||[,"표 미포함"])[1],
+    support:sup?(BRACELET_SUPPORT.find(([re])=>re.test(t))||[,"표 미포함"])[1]:null}));
+  const supportOnly=tiers.every(x=>x.dealer==="표 미포함")&&tiers.some(x=>x.support&&x.support!=="표 미포함");
+  if(!hasEffect) return {eligible:"효과 미부여 → 분해 결과물(실링 교환)",ev:OFF,tiers};
+  if(!sup&&supportOnly) return {eligible:"딜러 클래스의 서포터 옵션 팔찌 → 대상 제외",ev:OFF,tiers};
+  return {eligible:"대상 (티어 4, 효과 부여됨)",ev:OFF,tiers};
+}
+function convertStone(s,cls){
+  const e=s._p.engravings.filter(([,,h])=>!h);
+  if(e.length<2) return null;
+  const pt=l=>l<=4?l:l===6?1:l<=8?2:l===9?3:4;
+  const [[n1,l1],[n2,l2]]=e; const p1=pt(l1),p2=pt(l2);
+  const dealer=DEALER_ENGR.has(n1)&&DEALER_ENGR.has(n2);
+  const support=SUPPORT_CLASSES.has(cls)&&SUPPORT_ENGR.has(n1)&&SUPPORT_ENGR.has(n2);
+  const hi=Math.max(p1,p2),lo=Math.min(p1,p2),sum=hi+lo;
+  let up=null;
+  if(dealer||support){
+    if(sum===4&&hi===2) up=[1,3];
+    else if(sum===4&&hi===3) up=[1,5];
+    else if(sum===5) up=[2,7];
+    else if(sum===6&&hi===4) up=[3,7];
+    else if(sum===6&&hi===3) up=[4,7];
+    else if(sum>=7) up=[5,7];
+  }
+  return {n1,p1,n2,p2,sum,role:dealer?"딜러":support?"서포터":null,up,extra:sum>=8};
+}
+function convertGem([slot,kind,level],ov){
+  const tier=GEM_TIER[kind];
+  if(!tier||tier<3||(tier===3&&level<=2)) return {slot,kind,level,removed:true};
+  const nl=tier===3?level-2:level;
+  const src=ov.gemSource?.[slot];
+  const choice=tier===4&&level===8&&src&&src.bound&&src.source!=="normal";
+  return {slot,kind,level,newLevel:nl,choice};
+}
+function inferElla(evo,ilvl){
+  const hits=Object.entries(ESTHER).filter(([k,v])=>k.startsWith(evo+"_")&&v[0]===ilvl);
+  return hits.length===1?+hits[0][0].split("_")[1]:null;
+}
+function compute(data,ov){
+  const cls=data.profile.CharacterClassName;
+  const eq=t=>data.equipment.filter(e=>e.Type===t);
+  const slots={}; const rows=[]; const assumptions=[];
+  for(const [api,left,right] of ARMOR_PAIRS){
+    const g=eq(api)[0]; const il=g._p.itemLevel; const m=mapGear(il);
+    const ilvl=val(m.ilvl,OFF,"공지 표1");
+    slots[left]={...m,ilvlE:ilvl,honing:val(honingOf(g.Name),OFF,"공지: 재련 단계 그대로 반영"),from:left};
+    slots[right]={...m,ilvlE:ilvl,from:left};
+    rows.push({part:left,src:g,map:m,left:[left],right:[right],ev:OFF});
+  }
+  const w=eq("무기")[0]; let esther=null;
+  if(w.Grade==="에스더"){
+    const evo=honingOf(w.Name), il=w._p.itemLevel;
+    let ella=w._p.ella, how="툴팁";
+    if(ella==null&&ov.ella!=null){ella=ov.ella;how="입력";}
+    if(ella==null){ella=inferElla(evo,il);how="아이템 레벨로 추론";}
+    const row=ESTHER[evo+"_"+ella];
+    const ev=how==="툴팁"||how==="입력"?OFF:EST;
+    esther={evo,il,ella,how,row,ev};
+    const wm={tier:4,grade:"에스더",polish:row[2],ilvl:row[3]};
+    const linked=il>=1800?mapGear(1800):mapGear(il);
+    const linkedEv=EST;
+    slots["무기"]={...wm,ilvlE:val(row[3],ev,"공지 표2"),honing:val(row[4],ev,"공지 표3"),from:"무기",ella:row[1]};
+    for(const s of ["완갑","허리띠","성물","인장","팔찌"]) slots[s]={...linked,ilvlE:val(linked.ilvl,linkedEv,"공지 표1 · 에스더 연동 기준 추정"),from:"무기"};
+    rows.push({part:"무기",src:w,map:wm,linked,left:WEAPON_LEFT,right:WEAPON_RIGHT,ev:weakest(ev,linkedEv)});
+    assumptions.push({t:`에스더 무기 엘라 단계: ${how} → 엘라 ${ella}단계 (툴팁 형식 미검증)`,f:"ella"});
+    assumptions.push({t:"에스더 무기 연동 5부위는 기존 에스더 아이템 레벨을 표1에 넣어 계산",f:null});
+  }else{
+    const m=mapGear(w._p.itemLevel);
+    const e=val(m.ilvl,OFF,"공지 표1");
+    slots["무기"]={...m,ilvlE:e,honing:val(honingOf(w.Name),OFF,"공지"),from:"무기"};
+    for(const s of ["완갑","허리띠","성물","인장","팔찌"]) slots[s]={...m,ilvlE:e,from:"무기"};
+    rows.push({part:"무기",src:w,map:m,left:WEAPON_LEFT,right:WEAPON_RIGHT,ev:OFF});
+  }
+  slots["완갑"].honing=ov.vambrace!=null?val(ov.vambrace,OFF,"입력값"):none("확인 필요","완갑 API 노출 미검증");
+  slots["허리띠"].honing=val(0,OFF,"공지: 허리띠 0단계부터");
+  if(ov.vambrace==null) assumptions.push({t:"기존 완갑 재련 단계: API에서 확인 불가 → '확인 필요'로 표시 (평균에는 영향 없음)",f:"vambrace"});
+  assumptions.push({t:"부위별 최고 아이템 레벨 = 현재 장착 장비 (미장착 보유품 미반영)",f:"gear"});
+  const all=[...LAYOUT_LEFT,...LAYOUT_RIGHT].map(s=>slots[s]);
+  const avg=all.reduce((a,s)=>a+s.ilvlE.value,0)/16;
+  const avgEv=weakest(...all.map(s=>s.ilvlE.ev.level));
+  const cur6=data.equipment.filter(e=>["무기","투구","상의","하의","장갑","어깨"].includes(e.Type)).reduce((a,e)=>a+e._p.itemLevel,0)/6;
+  const acc=data.equipment.filter(e=>["목걸이","귀걸이","반지"].includes(e.Type)).map(a=>({a,r:gradeAccessory(a,cls)}));
+  const br=eq("팔찌")[0]; const bracelet=br?{b:br,r:analyzeBracelet(br,cls)}:null;
+  const st=eq("어빌리티 스톤")[0]; const stone=st?convertStone(st,cls):null;
+  if(stone) assumptions.push({t:"장착 어빌리티 스톤은 세공 완료로 가정, 툴팁 Lv 값을 활성 포인트로 해석",f:"stone"});
+  const gems=data.gems.map(g=>convertGem(g,ov));
+  if(data.gems.some(g=>g[2]===8)&&!ov.gemSource) assumptions.push({t:"8레벨 보석 3개: 일반 획득으로 가정 (유료 성장 상품·낙원 획득이면 선택 상자)",f:"gems"});
+  assumptions.push({t:"장인의 기운: 기존 수치 그대로 유지 (입력하면 부위별 표시)",f:"energy"});
+  const karma=data.karma.map(([n,d])=>({n,lv:+(d.match(/(\d+)레벨/)||[])[1]}));
+  return {cls,slots,rows,avg,avgEv,cur6,acc,bracelet,stone,gems,karma,esther,assumptions};
+}
+
+/* ===================== 렌더 ===================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const EVL={official:"공식 확정",estimated:"추정",unknown:"미확인"};
+const badge=(lv,src)=>`<span class="ev ev-${lv}" title="${esc(src||"")}">${EVL[lv]}</span>`;
+const fmt=n=>n.toLocaleString("ko-KR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const q=n=>n==null?"":`<span class="q ${n>=100?"q5":n>=90?"q4":n>=70?"q3":n>=30?"q2":n>=10?"q1":"q0"}">${n}</span>`;
+const rk=r=>`<span class="pill ${r==="상"?"opt-hi":r==="중"?"opt-mid":"opt-lo"}">${r}</span>`;
+const ico=(g,txt,sm)=>`<span class="ico${sm?" sm":""}" data-grade="${g}">${esc(txt)}</span>`;
+const estTxt=e=>e.kind==="value"?e.value:e.kind==="range"?`${e.min}~${e.max}`:`<span class="na">${esc(e.label)}</span>`;
+const PART_NAME={어깨:"견갑"};
+
+function renderProfile(p){
+  $("#profile").innerHTML=`
+  <div class="portrait"><span>${esc(p.CharacterClassName[0])}</span><small>CharacterImage</small></div>
+  <div class="pmeta">
+    <div class="line1"><span class="pill gpill" data-grade="희귀">${esc(p.ServerName)}</span><span>${esc(p.CharacterClassName)}</span>·<span>Lv.${p.CharacterLevel}</span>·<span>원정대 Lv.${p.ExpeditionLevel}</span></div>
+    <h1>${esc(p.CharacterName)} <small>${esc(p.Title)}</small></h1>
+    <div class="bignums">
+      <div><b class="num">${esc(p.ItemAvgLevel)}</b><span>아이템 레벨</span></div>
+      <div><b class="num">${esc(p.CombatPower)}</b><span>전투력</span></div>
+      <div><b class="num">${p.HonorPoint.toLocaleString()}</b><span>명예</span></div>
+    </div>
+    <div class="stats">${p.Stats.map(([t,v])=>`<span class="stat">${t}<b class="num">${v}</b></span>`).join("")}</div>
+  </div>
+  <div class="pside">
+    <button class="btn">☆ 즐겨찾기</button>
+    <button class="btn">원정대 캐릭터</button>
+  </div>`;
+}
+
+function slotChip(name,s){
+  const g=s.grade;
+  const polish=g==="에스더"?`엘라 ${s.ella}${s.polish?" · "+s.polish+"연마":""}`:`T${s.tier} ${g} ${s.polish}연마`;
+  return `<div class="dst-slot">${ico(g,name.replace(/\d/,"")[0],true)}
+    <div style="min-width:0"><div class="t">${name}${NEW_SLOTS.has(name)?'<span class="new">신규</span>':""} <span class="num">${s.ilvlE.value}</span></div>
+    <div class="meta"><span class="gtext" data-grade="${g}">${polish}</span>${s.honing?`· 슬롯 재련 <b class="num">${estTxt(s.honing)}</b>`:""}</div></div></div>`;
+}
+
+function render(data,ov){
+  const R=compute(data,ov);
+  const counts={official:0,estimated:0,unknown:0};
+  const tally=l=>{counts[l]++;return l};
+  const p=data.profile;
+  const profAvg=+p.ItemAvgLevel.replace(/,/g,"");
+  const d=R.avg-profAvg;
+
+  // 장비 변환 행
+  const convRows=R.rows.map(r=>{
+    const s=r.src, P=s._p; tally(r.ev);
+    const down=r.map.ilvl<P.itemLevel;
+    const notes=[];
+    if(P.advanced) notes.push(`상급 재련 ${P.advanced}단계는 제거됩니다 (효과는 현재 아이템 레벨에 반영되어 있음, 별도 보상 언급 없음).`);
+    if(r.part==="무기"&&!R.esther) notes.push("완갑 아이템 레벨은 무기를 따릅니다(확정). 완갑 슬롯 재련은 기존 완갑 단계 — API로 확인할 수 없어 '확인 필요'.");
+    if(R.esther&&r.part==="무기") notes.push(`에스더 진화 ${R.esther.evo} · 엘라 단계 ${R.esther.how}(${R.esther.ella}단계) → 엘라 ${R.esther.row[1]}단계. 연동 5부위는 기존 아이템 레벨 ${R.esther.il}을 표1에 넣은 값(추정).`);
+    return `<div class="conv-row" aria-label="${PART_NAME[s.Type]||s.Type} ${P.itemLevel}에서 ${r.map.ilvl}로">
+      <div class="row src">${ico(s.Grade,(PART_NAME[s.Type]||s.Type)[0])}
+        <div style="min-width:0"><div class="name">${esc(s.Name)}</div>
+        <div class="meta"><span>${PART_NAME[s.Type]||s.Type}</span>· <b class="num">${P.itemLevel}</b>${q(P.quality)}${P.advanced?`<span class="pill gpill" data-grade="영웅">상재 ${P.advanced}</span>`:""}</div></div></div>
+      <div class="arrow${down?" down":""}" aria-hidden="true">→</div>
+      <div class="dst">
+        <div class="dst-side"><span class="side-lbl">왼쪽</span>${r.left.map(n=>slotChip(n,R.slots[n])).join("")}</div>
+        <div class="dst-side"><span class="side-lbl">오른쪽</span>${r.right.map(n=>slotChip(n,R.slots[n])).join("")}</div>
+      </div>
+      <div class="conv-note">${badge(r.ev,"공지 표1 · 부위 매핑")} ${notes.map(esc).join(" ")}</div>
+    </div>`;}).join("");
+
+  // 16부위
+  const cell=n=>{const s=R.slots[n];return `<div class="cell${NEW_SLOTS.has(n)?" is-new":""}">${ico(s.grade,n[0],true)}<span class="nm">${n}</span><span class="gtext" data-grade="${s.grade}">${s.grade==="에스더"?"엘라"+s.ella:s.grade+" "+s.polish}</span><span class="lv num">${s.ilvlE.value}</span>${s.honing?`<span class="hn num">재련 ${s.honing.kind==="value"?s.honing.value:"?"}</span>`:'<span class="hn"></span>'}</div>`};
+
+  // 에스더 카드
+  let estherCard;
+  if(!R.esther){
+    estherCard=`<section class="card"><h2>에스더 무기 <span class="right">${badge("official","장착 무기 Grade")}</span></h2>
+      <p class="esther-empty">장착한 에스더 무기가 없습니다. 보관 중인 에스더 무기가 있으면 <a href="#ov">추가 정보 입력</a>에서 진화·엘라 단계를 넣으세요. 기존 아이템 레벨이 더 높은 무기가 이관 기준이 됩니다.</p></section>`;
+  }else{
+    const e=R.esther, row=e.row; tally(e.ev);
+    estherCard=`<section class="card"><h2>에스더 무기 <span class="sub">공지 표2·3·4</span><span class="right">${badge(e.ev,"엘라 단계 "+e.how)}</span></h2>
+      <dl class="kv2">
+        <dt>현재</dt><dd>진화 ${e.evo}단계 · 엘라 <b>${e.ella}단계</b> <span class="faint">(${e.how})</span> · <b class="num">${e.il}</b></dd><dd class="e"></dd>
+        <dt>이관 후</dt><dd><span class="gtext" data-grade="에스더">엘라 ${row[1]}단계${row[2]?" · "+row[2]+"연마":""}</span> · <b class="num">${row[3]}</b> <span class="delta ${row[3]>=e.il?"up":"down"}">${row[3]>=e.il?"+":""}${row[3]-e.il}</span></dd><dd class="e">${badge(e.ev,"표2")}</dd>
+        <dt>무기 슬롯 재련</dt><dd><b class="num">${row[4]}단계</b></dd><dd class="e">${badge(e.ev,"표3")}</dd>
+        <dt>환급</dt><dd>에스더의 기운 <b class="num">${row[5]}</b> · 로맨틱 재료 키트 <b class="num">${row[6].toLocaleString()}</b> (캐릭터 귀속)</dd><dd class="e">${badge(e.ev,"표4")}</dd>
+      </dl></section>`;
+  }
+
+  // 장신구
+  const accRows=R.acc.map(({a,r})=>{tally(r.ev);return `<div class="scroll-row">
+    <div class="row">${ico(a.Grade,a.Type[0])}<div style="min-width:0"><div class="small"><b>${a.Type}</b> <span class="gtext" data-grade="${a.Grade}">${a.Grade}</span> ${q(a._p.quality)}</div>
+      ${a._p.options.map(([r,t])=>`<div class="opt-line">${rk(r)}<span>${esc(t)}</span></div>`).join("")}</div></div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="res"><div class="row" style="flex-wrap:wrap;gap:6px"><b>${esc(r.label)}</b>${badge(r.ev,"공지 표5·6")}</div>
+      <div class="why">${esc(r.why)}</div>
+      ${r.outcome==="scroll"?'<div class="why">거래 가능 횟수: 기존 횟수 승계 — <span class="na">횟수 확인 필요</span></div>':""}</div></div>`}).join("");
+
+  // 팔찌
+  let braceletCard="";
+  if(R.bracelet){
+    const {b,r}=R.bracelet; tally(OFF); tally(UNK);
+    const sup=SUPPORT_CLASSES.has(R.cls);
+    braceletCard=`<section class="card"><h2>팔찌 → 인장 마력 주입 주문서 <span class="sub">공지 표7·8</span></h2>
+      <div class="scroll-row" style="padding-top:0;border:0">
+        <div class="row">${ico(b.Grade,"팔")}<div><div class="small"><b>${esc(b.Name)}</b></div><div class="small muted">${esc(r.eligible)} ${badge(r.ev,"공지")}</div></div></div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="res"><div class="row" style="flex-wrap:wrap;gap:6px"><b>인장 마력 주입 주문서</b>${badge("unknown","등급 산식 미공개")}</div>
+          <div class="why"><span class="na">1~21등급 중 계산 불가</span> — 옵션별 배점과 등급 컷이 공개되지 않았습니다.</div></div>
+      </div>
+      <div class="tier-table" role="table" aria-label="팔찌 옵션 티어">
+        <span class="h">옵션</span><span class="h">딜러 기준</span>${sup?'<span class="h sup">서포터 기준</span>':"<span></span>"}
+        ${r.tiers.map(t=>`<span class="opt-line">${rk(t.rank)}${esc(t.text)}</span><span>${t.dealer}</span>${sup?`<span class="sup">${t.support}</span>`:"<span></span>"}`).join("")}
+      </div>
+      <p class="small faint" style="margin:10px 0 0">티어 분류 ${badge("official","공지 표7·8")} · 공지: 동일 티어 안에서도 성능 차이가 있을 수 있습니다. 보유 팔찌 중 최고 성능 1개만 이관되므로 미장착 팔찌가 더 좋으면 그 팔찌가 기준이 됩니다.</p>
+    </section>`;
+  }
+
+  // 스톤
+  let stoneCard="";
+  if(R.stone){
+    const s=R.stone; const lv=s.up?EST:OFF; tally(lv);
+    stoneCard=`<section class="card"><h2>어빌리티 스톤 → 각인 슬롯 <span class="sub">공지 표9</span><span class="right">${badge(lv,"표9 확정 · 스톤 Lv 해석 미검증")}</span></h2>
+      <div class="engr-slots" aria-label="각인 슬롯 5개 중 ${s.up?s.up[0]:0}개 ${s.up?s.up[1]:0}단계">${[0,1,2,3,4].map(i=>`<i class="${s.up&&i<s.up[0]?"on":""}">${s.up&&i<s.up[0]?"Lv."+s.up[1]:"—"}</i>`).join("")}</div>
+      <p class="small" style="margin:0"><b>${s.up?`각인 슬롯 ${s.up[0]}개 ${s.up[1]}단계`:"반영 없음"}</b>${s.extra?" + 추가 아이템(종류 미확인)":""}</p>
+      <p class="small muted" style="margin:4px 0 0">${esc(s.n1)} ${s.p1} + ${esc(s.n2)} ${s.p2} = 합계 ${s.sum} (${s.role?s.role+" 유효 각인 2개":"유효 조합 아님"}) · 감소 효과는 영향 없음</p>
+      <p class="small faint" style="margin:4px 0 0">툴팁 Lv 값을 활성 포인트로 해석했습니다(세공 노드 수일 가능성 검증 전).</p></section>`;
+  }
+
+  // 보석
+  tally(OFF);
+  const kinds={}; R.gems.forEach(g=>kinds[g.kind]=(kinds[g.kind]||0)+1);
+  const gemCard=`<section class="card"><h2>보석 → 광휘 <span class="sub">${Object.entries(kinds).map(([k,n])=>k+" "+n).join(" · ")} → 광휘 ${R.gems.filter(g=>!g.removed).length}</span><span class="right">${badge("official","공지 표10")}</span></h2>
+    <div class="gem-conv">${R.gems.map(g=>`<div class="g${g.choice?" choice":""}"><span>${g.kind} ${g.level}</span><span class="to">${g.removed?"제거":"↓ 광휘 "+g.newLevel}</span>${g.choice?'<span>선택 상자</span>':""}</div>`).join("")}</div>
+    <p class="small muted" style="margin:10px 0 0">티어 4 겁화·작열 → 같은 레벨 광휘(레벨 변화 없음). 장착 보석은 모두 해제되어 통합 보관함으로 지급되며 귀속 여부는 유지됩니다. 8레벨 3개는 일반 획득으로 가정했습니다.</p></section>`;
+
+  // 환급·지급
+  const karmaHit=R.karma.filter(k=>k.lv>=22);
+  const accShard=R.acc.filter(x=>x.r.outcome==="shard").length;
+  const pays=[
+    ["에스더의 기운 · 로맨틱 재료 키트", R.esther?`${R.esther.row[5]} · ${R.esther.row[6].toLocaleString()}`:"해당 없음", R.esther?R.esther.ev:OFF, "에스더 무기 환급 (공지 표4)"],
+    ["2부 성장 재료 교환용 토큰 — 품질", '<span class="na">수량 미확인</span>', UNK, "부위별 최고 품질: "+R.rows.map(r=>(PART_NAME[r.src.Type]||r.src.Type)+" "+(r.src._p.quality??"–")).join(" · ")+" (에스더 무기 제외)"],
+    ["2부 성장 재료 교환용 토큰 — 카르마", '<span class="na">수량 미확인</span>', EST, R.karma.map(k=>`${k.n} ${k.lv}레벨`).join(" · ")+` → 22레벨 이상: ${karmaHit.map(k=>k.n).join(", ")||"없음"} (아크 패시브 Description 해석 추정)`],
+    ["영롱한 보석 파편", `장신구 ${accShard}개분 · <span class="na">수량 미확인</span>`, UNK, "품질 67 미만 또는 유효 옵션 없는 장신구"],
+    ["상급 재련 제거", '<span class="na">보상 언급 없음</span>', UNK, "상급 재련이 있는 부위: "+(R.rows.filter(r=>r.src._p.advanced).map(r=>(PART_NAME[r.src.Type]||r.src.Type)+" "+r.src._p.advanced+"단계").join(", ")||"없음")],
+    ["재련 재료 · 팔찌 재변환권 · 여분 스톤 · 비상의 돌 키트 등", '<span class="na">API로 알 수 없음</span>', UNK, "보유량을 API로 조회할 수 없어 계산하지 않습니다. 교체 규칙은 공지를 참고하세요."]
+  ];
+  pays.forEach(x=>tally(x[2]));
+  const payCard=`<section class="card"><h2>환급·지급 아이템</h2><div class="pay">${pays.map(([i,a,l,b])=>`<div class="pay-row"><span>${esc(i)}</span><span class="amt">${a} ${badge(l,"")}</span><span class="basis">${esc(b)}</span></div>`).join("")}</div></section>`;
+
+  // 슬롯 배지 집계 (16칸)
+  [...LAYOUT_LEFT,...LAYOUT_RIGHT].forEach(n=>tally(R.slots[n].ilvlE.ev.level));
+  tally(R.slots["완갑"].honing.ev.level);
+
+  const ovCard=`<details class="card" id="ov"${ov.open?" open":""}>
+    <summary>추가 정보 입력 <span class="sub">선택 · 입력하지 않으면 아래 가정으로 계산합니다</span></summary>
+    <form class="ov-form" onsubmit="return false">
+      <fieldset><legend>보관 중인 더 높은 장비 (아이템 레벨)</legend>
+        <div class="ov-grid">${["투구","견갑","상의","하의","장갑","무기"].map(n=>`<label>${n}<input inputmode="decimal" placeholder="장착 기준"></label>`).join("")}</div>
+        <p class="hint">부위별 가장 높은 아이템 레벨 장비가 이관 기준입니다.</p></fieldset>
+      <fieldset><legend>에스더 무기</legend>
+        <div class="ov-grid"><label>진화 단계<select><option>없음</option>${[...Array(11).keys()].map(i=>`<option>${i}</option>`).join("")}</select></label>
+        <label>엘라 단계<select><option>모름</option><option>없음</option><option>1</option><option>2</option><option>3</option></select></label><span></span></div></fieldset>
+      <fieldset><legend>슬롯 정보</legend>
+        <div class="ov-grid"><label>기존 완갑 재련<input inputmode="numeric" placeholder="0~25"></label>
+        <label>장인의 기운 (투구) %<input inputmode="decimal" placeholder="유지"></label><label>… 다른 부위<input disabled placeholder="부위별"></label></div></fieldset>
+      <fieldset><legend>8레벨 보석 획득처</legend>
+        <div class="ov-grid">${R.gems.filter(g=>g.level===8).map(g=>`<label>${g.kind} 8 (#${g.slot})<select><option>일반</option><option>유료 성장 상품</option><option>낙원</option></select></label>`).join("")}</div>
+        <p class="hint">유료 성장 상품·낙원 획득 귀속 8레벨은 "거래 불가 8레벨 / 거래 가능 7레벨" 선택 상자로 지급됩니다.</p></fieldset>
+      <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--text)"><input type="checkbox" checked style="width:auto"> 장착 어빌리티 스톤 세공 완료</label>
+      <p class="hint">입력값은 이 브라우저에만 저장되며 어디에도 전송되지 않습니다.</p>
+      <div class="actions"><button class="btn">모두 지우기</button></div>
+    </form></details>`;
+  const assumeCard=`<section class="card"><h2>적용 중인 가정 <span class="sub">${R.assumptions.length}개</span></h2>
+    <ol class="assume">${R.assumptions.map(a=>`<li>${esc(a.t)}${a.f?'<a href="#ov">바꾸기</a>':""}</li>`).join("")}</ol></section>`;
+  const outCard=`<section class="card out-scope"><details><summary>이 화면이 계산하지 않는 것</summary>
+    <p>카드·특수 장비(나침반·부적·문장), 생활·항해, 아크 패시브 전투 스타일, 스킬 룬, 콘텐츠 보상, 재화·재료 교환 비율은 장비 이관이 아니거나 보유량을 API로 알 수 없어 계산하지 않습니다. <a href="${NOTICE}" target="_blank" rel="noopener noreferrer">공지 전체 보기 ↗</a></p></details></section>`;
+
+  $("#view-transfer").innerHTML=`
+  <p class="notice warn disclaimer" role="note">⚠ <span>공식 공지(2026-11-25) 기반 <b>예상치</b>입니다. 실제 이관 결과와 다를 수 있습니다. 장착 중인 장비만 보고 계산합니다.</span> <a href="${NOTICE}" target="_blank" rel="noopener noreferrer">공지 보기 ↗</a></p>
+  <section class="card summary" aria-label="평균 아이템 레벨 요약">
+    <div><div class="lbl">현재 평균 아이템 레벨 · 6부위</div><div class="big num">${esc(p.ItemAvgLevel)}</div></div>
+    <div class="big-arrow" aria-hidden="true">→</div>
+    <div class="after"><div class="lbl">이관 후 예상 · 16부위 ${badge(R.avgEv,"16칸 아이템 레벨 중 가장 약한 근거")}</div><div class="big num">${fmt(R.avg)}<span class="delta ${d>=0?"up":"down"}">${d>=0?"+":""}${fmt(d)}</span></div></div>
+    <div class="counts" id="counts"></div>
+    <div class="sub">장착 6부위 계산 <b class="num">${fmt(R.cur6)}</b>${Math.abs(R.cur6-profAvg)>=0.5?` · <span class="warn-line">프로필 값과 장착 장비 평균이 다릅니다. 프로필 갱신 지연이나 프리셋 차이일 수 있습니다.</span>`:""}</div>
+  </section>
+  <div class="grid">
+    <div class="col">${ovCard}${assumeCard}${payCard}${outCard}</div>
+    <div class="col">
+      <section class="card"><h2>장비 변환 <span class="sub">기존 6부위 → 16부위 · 공지 표1</span></h2><div class="conv">${convRows}</div></section>
+      <section class="card"><h2>이관 후 16부위 <span class="sub">점선 = 신규 슬롯</span></h2>
+        <div class="slot16"><div><h3>왼쪽 · 무기/방어구 (슬롯 재련)</h3><div class="cells">${LAYOUT_LEFT.map(cell).join("")}</div></div>
+        <div><h3>오른쪽 · 장신구/보구 (마력 주입)</h3><div class="cells">${LAYOUT_RIGHT.map(cell).join("")}</div></div></div></section>
+      ${estherCard}
+      <section class="card"><h2>장신구 → 마력 주입 주문서 <span class="sub">공지 표5·6 · 품질 67 이상 티어 4 고대</span></h2>${accRows}</section>
+      ${braceletCard}${stoneCard}${gemCard}
+    </div>
+  </div>
+  <footer class="card source-footer transfer-footer small muted" style="margin-top:16px">
+    <div>공식 공지 기반 예상치이며 실제 결과와 다를 수 있습니다 · <a href="${NOTICE}" target="_blank" rel="noopener noreferrer">공지 13608 ↗</a> · 규칙 ${RULES_VERSION} · Lost Ark Open API · 조회 14:02:11 · 추가 요청 0회</div>
+    <button class="btn">새로고침</button>
+  </footer>`;
+  $("#counts").innerHTML=`${badge("official")}<span class="small num">${counts.official}</span> ${badge("estimated")}<span class="small num">${counts.estimated}</span> ${badge("unknown")}<span class="small num">${counts.unknown}</span>`;
+}
+
+/* ===================== 목업 상태 ===================== */
+function applyTheme(t){ if(t) document.documentElement.dataset.theme=t; }
+function route(){
+  const h=location.hash.slice(1)||"transfer";
+  const view=h==="current"?"current":"transfer";
+  $("#view-current").hidden=view!=="current";
+  $("#view-transfer").hidden=view!=="transfer";
+  $("#tab-current").toggleAttribute("aria-current",view==="current");
+  $("#tab-transfer").toggleAttribute("aria-current",view==="transfer");
+  if(view==="current") $("#tab-current").setAttribute("aria-current","page"); else $("#tab-transfer").setAttribute("aria-current","page");
+  document.querySelectorAll("[data-go]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.go===h||(h==="transfer"&&b.dataset.go==="transfer"))));
+  const data=JSON.parse(JSON.stringify(SAMPLE));
+  if(h==="esther") data.equipment[0]=ESTHER_WEAPON;
+  renderProfile(data.profile);
+  render(data,{open:new URLSearchParams(location.search).get("open")==="1"});
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.go});
+document.querySelectorAll("[data-theme-set]").forEach(b=>b.onclick=()=>applyTheme(b.dataset.themeSet));
+addEventListener("hashchange",route);
+applyTheme(new URLSearchParams(location.search).get("theme"));
+route();
+</script>
+</body>
+</html>

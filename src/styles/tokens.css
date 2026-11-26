@@ -1,0 +1,76 @@
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --surface-2: #eef0f5;
+  --line: #dde1ea;
+  --text: #1b1f2a;
+  --text-2: #5b6375;
+  --text-3: #9aa1b1;
+  --accent: #4b5bdc;
+  --on-accent: #ffffff;
+  --accent-soft: #e6e9fd;
+  --danger: #d8443a;
+  --warn: #c98a12;
+  --ok: #1f9d6b;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(20, 25, 40, 0.06), 0 4px 16px rgba(20, 25, 40, 0.05);
+  /* 등급 색상 토큰 (라이트) */
+  --g-normal: #8c93a3;
+  --g-uncommon: #3d9a3a;
+  --g-rare: #2d7fd6;
+  --g-epic: #8a4bd8;
+  --g-legendary: #e0901b;
+  --g-relic: #d65a1f;
+  --g-ancient: #c9b27c;
+  --g-esther: #1fb5ad;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1117;
+    --surface: #171a23;
+    --surface-2: #1f2330;
+    --line: #2a2f3e;
+    --text: #e8eaf0;
+    --text-2: #a3a9b8;
+    --text-3: #6b7183;
+    --accent: #8391ff;
+    --on-accent: #0f1117;
+    --accent-soft: #252a4a;
+    --danger: #ff6b60;
+    --warn: #f0b43c;
+    --ok: #3fcf94;
+    --shadow: none;
+    --g-normal: #a2a8b6;
+    --g-uncommon: #69c165;
+    --g-rare: #5aa8ff;
+    --g-epic: #b07bff;
+    --g-legendary: #ffb03a;
+    --g-relic: #ff7a3d;
+    --g-ancient: #e6d3a3;
+    --g-esther: #3fe0d6;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1117;
+  --surface: #171a23;
+  --surface-2: #1f2330;
+  --line: #2a2f3e;
+  --text: #e8eaf0;
+  --text-2: #a3a9b8;
+  --text-3: #6b7183;
+  --accent: #8391ff;
+  --on-accent: #0f1117;
+  --accent-soft: #252a4a;
+  --danger: #ff6b60;
+  --warn: #f0b43c;
+  --ok: #3fcf94;
+  --shadow: none;
+  --g-normal: #a2a8b6;
+  --g-uncommon: #69c165;
+  --g-rare: #5aa8ff;
+  --g-epic: #b07bff;
+  --g-legendary: #ffb03a;
+  --g-relic: #ff7a3d;
+  --g-ancient: #e6d3a3;
+  --g-esther: #3fe0d6;
+}

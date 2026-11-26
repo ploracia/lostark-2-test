@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>모꼬꼬로아 목업</title>
+<!-- 정적 목업: 외부 호출 없음. 모든 데이터는 아래 SAMPLE(실제 API 응답 형태를 모방)에서 렌더링. -->
+<style>
+:root{
+  --bg:#f4f5f8; --surface:#ffffff; --surface-2:#eef0f5; --line:#dde1ea;
+  --text:#1b1f2a; --text-2:#5b6375; --text-3:#9aa1b1;
+  --accent:#4b5bdc; --on-accent:#ffffff; --accent-soft:#e6e9fd; --danger:#d8443a; --warn:#c98a12; --ok:#1f9d6b;
+  --radius:14px; --shadow:0 1px 2px rgba(20,25,40,.06),0 4px 16px rgba(20,25,40,.05);
+  /* 등급 색상 토큰 (라이트) */
+  --g-normal:#8c93a3; --g-uncommon:#3d9a3a; --g-rare:#2d7fd6; --g-epic:#8a4bd8;
+  --g-legendary:#e0901b; --g-relic:#d65a1f; --g-ancient:#c9b27c; --g-esther:#1fb5ad;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1117; --surface:#171a23; --surface-2:#1f2330; --line:#2a2f3e;
+    --text:#e8eaf0; --text-2:#a3a9b8; --text-3:#6b7183;
+    --accent:#8391ff; --on-accent:#0f1117; --accent-soft:#252a4a; --danger:#ff6b60; --warn:#f0b43c; --ok:#3fcf94;
+    --shadow:none;
+    --g-normal:#a2a8b6; --g-uncommon:#69c165; --g-rare:#5aa8ff; --g-epic:#b07bff;
+    --g-legendary:#ffb03a; --g-relic:#ff7a3d; --g-ancient:#e6d3a3; --g-esther:#3fe0d6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1117; --surface:#171a23; --surface-2:#1f2330; --line:#2a2f3e;
+  --text:#e8eaf0; --text-2:#a3a9b8; --text-3:#6b7183;
+  --accent:#8391ff; --on-accent:#0f1117; --accent-soft:#252a4a; --danger:#ff6b60; --warn:#f0b43c; --ok:#3fcf94;
+  --shadow:none;
+  --g-normal:#a2a8b6; --g-uncommon:#69c165; --g-rare:#5aa8ff; --g-epic:#b07bff;
+  --g-legendary:#ffb03a; --g-relic:#ff7a3d; --g-ancient:#e6d3a3; --g-esther:#3fe0d6;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- 목업 전용 내비게이션 (실제 앱에는 없음) ---------- */
+.mock-nav{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;background:var(--surface-2);border-bottom:1px dashed var(--line);font-size:12px;color:var(--text-2);align-items:center}
+.mock-nav b{margin-right:4px}
+.mock-nav button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 10px;cursor:pointer}
+.mock-nav button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+/* ---------- 상단 바 ---------- */
+.topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:10px 20px;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.logo i{width:22px;height:22px;border-radius:7px;background:conic-gradient(from 210deg,var(--accent),var(--g-esther),var(--g-legendary),var(--accent));display:inline-block}
+.search{flex:1;max-width:520px;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:0 6px 0 12px}
+.search:focus-within{border-color:var(--accent);background:var(--surface)}
+.search input{flex:1;border:0;background:transparent;padding:9px 0;outline:0;min-width:0}
+.search kbd{font-size:11px;color:var(--text-3);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.danger{color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);cursor:pointer;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.dot.off{background:var(--text-3)} .dot.bad{background:var(--danger)}
+.spacer{flex:1}
+
+main{max-width:1240px;margin:0 auto;padding:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.card h2{font-size:14px;margin:0 0 12px;display:flex;align-items:center;gap:8px;font-weight:700}
+.card h2 .sub{font-weight:500;color:var(--text-3);font-size:12px}
+.card h2 .right{margin-left:auto;font-weight:500}
+.muted{color:var(--text-2)} .faint{color:var(--text-3)}
+.pill{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;line-height:1.6}
+
+/* ---------- 등급 ---------- */
+[data-grade]{--g:var(--g-normal)}
+[data-grade="고급"]{--g:var(--g-uncommon)} [data-grade="희귀"]{--g:var(--g-rare)}
+[data-grade="영웅"]{--g:var(--g-epic)} [data-grade="전설"]{--g:var(--g-legendary)}
+[data-grade="유물"]{--g:var(--g-relic)} [data-grade="고대"]{--g:var(--g-ancient)}
+[data-grade="에스더"]{--g:var(--g-esther)}
+.ico{position:relative;width:48px;height:48px;flex:none;border-radius:10px;overflow:hidden;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--g) 55%,#000 0%),color-mix(in srgb,var(--g) 30%,#111));
+  box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--g) 80%,#fff 20%);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.ico.sm{width:36px;height:36px;font-size:12px;border-radius:8px}
+.ico .tier{position:absolute;top:2px;right:3px;font-size:9px;font-weight:700;opacity:.85}
+.ico .badge{position:absolute;left:0;right:0;bottom:0;font-size:10px;text-align:center;background:rgba(0,0,0,.55);line-height:15px;font-weight:700}
+.gtext{color:var(--g);font-weight:700}
+.gpill{background:color-mix(in srgb,var(--g) 18%,transparent);color:var(--g)}
+/* 품질 색: 0-9 / 10-29 / 30-69 / 70-89 / 90-99 / 100 */
+.q{font-size:10px;font-weight:700;padding:0 5px;border-radius:4px;color:#fff}
+.q0{background:#c0392b}.q1{background:#c79a1b}.q2{background:#3d9a3a}.q3{background:#2d7fd6}.q4{background:#8a4bd8}.q5{background:#e0901b}
+.opt-hi{background:color-mix(in srgb,var(--g-legendary) 22%,transparent);color:var(--g-legendary)}
+.opt-mid{background:color-mix(in srgb,var(--g-epic) 20%,transparent);color:var(--g-epic)}
+.opt-lo{background:color-mix(in srgb,var(--g-rare) 20%,transparent);color:var(--g-rare)}
+
+/* ---------- 화면: API 키 ---------- */
+.key-wrap{max-width:640px;margin:24px auto;display:grid;gap:16px}
+.key-hero h1{font-size:24px;margin:0 0 6px;letter-spacing:-.02em}
+.field{display:grid;gap:6px}
+.field label{font-weight:600;font-size:13px}
+.keybox{display:flex;gap:8px}
+.keybox input{flex:1;min-width:0;font-family:ui-monospace,Consolas,monospace;font-size:13px;border:1px solid var(--line);background:var(--surface-2);border-radius:9px;padding:10px 12px;outline:0}
+.keybox input:focus{border-color:var(--accent);background:var(--surface)}
+.radio-row{display:grid;gap:8px}
+.radio{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.radio:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.radio input{margin-top:3px;accent-color:var(--accent)}
+.radio small{display:block;color:var(--text-2)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.notice{border-radius:10px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.notice.ok{background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--ok)}
+.notice.warn{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.notice.err{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)}
+.steps{margin:0;padding-left:20px;color:var(--text-2)} .steps li{margin:4px 0}
+a{color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.kv dt{color:var(--text-2)} .kv dd{margin:0}
+
+/* ---------- 화면: 캐릭터 ---------- */
+.profile{display:grid;grid-template-columns:180px 1fr auto;gap:20px;align-items:center;margin-bottom:16px;position:relative;overflow:hidden}
+.profile::before{content:"";position:absolute;inset:0;background:radial-gradient(600px 200px at 0% 0%,var(--accent-soft),transparent 70%);pointer-events:none}
+.portrait{position:relative;width:180px;height:200px;border-radius:12px;background:linear-gradient(160deg,var(--surface-2),color-mix(in srgb,var(--accent) 25%,var(--surface-2)));display:grid;place-items:end center;overflow:hidden}
+.portrait span{font-size:72px;font-weight:900;opacity:.18;line-height:1;margin-bottom:28px}
+.portrait small{position:absolute;bottom:8px;font-size:11px;color:var(--text-3)}
+.pmeta{position:relative;min-width:0}
+.pmeta .line1{display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--text-2);font-size:13px}
+.pmeta h1{font-size:28px;margin:4px 0 2px;letter-spacing:-.02em;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pmeta h1 small{font-size:14px;color:var(--text-2);font-weight:500}
+.bignums{display:flex;gap:28px;margin:12px 0;flex-wrap:wrap}
+.bignums div b{display:block;font-size:22px;letter-spacing:-.01em}
+.bignums div span{font-size:12px;color:var(--text-2)}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{background:var(--surface-2);border-radius:8px;padding:3px 9px;font-size:12px}
+.stat b{margin-left:4px}
+.pside{position:relative;display:grid;gap:8px;align-self:start;justify-items:end}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+.col{display:grid;gap:16px;min-width:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.row{display:flex;gap:10px;align-items:center;min-width:0}
+.list{display:grid;gap:10px}
+.tabs{display:inline-flex;background:var(--surface-2);border-radius:8px;padding:2px;margin-left:auto}
+.tabs button{border:0;background:transparent;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;color:var(--text-2)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow)}
+.equip{display:grid;gap:10px}
+.eq .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eq .meta{font-size:12px;color:var(--text-2);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.acc .opts{display:grid;gap:2px;font-size:12px}
+.acc .opts div{display:flex;gap:6px;align-items:center}
+.gems{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
+.gem{display:grid;justify-items:center;gap:3px;font-size:10.5px;color:var(--text-2);text-align:center}
+.gem .ico{width:46px;height:46px;border-radius:50% 50% 12px 12px}
+.gem .lv{position:absolute;top:2px;left:4px;font-size:11px;font-weight:800}
+.engr .ico{border-radius:50%}
+.lvl{display:flex;gap:3px}
+.lvl i{width:8px;height:8px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
+.lvl i.on{background:var(--g);border-color:var(--g)}
+.ap-points{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ap-points div{background:var(--surface-2);border-radius:10px;padding:8px;text-align:center}
+.ap-points b{display:block;font-size:20px}
+.ap-points span{font-size:11px;color:var(--text-2)}
+.ap-points div:nth-child(1) b{color:var(--g-legendary)} .ap-points div:nth-child(2) b{color:var(--g-rare)} .ap-points div:nth-child(3) b{color:var(--g-uncommon)}
+.cores{display:grid;gap:8px}
+.core{display:flex;gap:10px;align-items:center}
+.core .gemdots{display:flex;gap:3px;margin-left:auto}
+.core .gemdots i{width:10px;height:10px;transform:rotate(45deg);border-radius:2px;background:var(--g);opacity:.9}
+.core .gemdots i.off{background:var(--line)}
+.cardset{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
+.tcard{aspect-ratio:3/4.3;border-radius:8px;position:relative;background:linear-gradient(170deg,color-mix(in srgb,var(--g) 45%,#222),#151821);box-shadow:inset 0 0 0 1.5px var(--g);display:grid;place-items:center;color:#fff;font-size:10px;text-align:center;padding:4px}
+.tcard .awake{position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:1.5px}
+.tcard .awake i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.25)}
+.tcard .awake i.on{background:#ffd76a}
+.divider{height:1px;background:var(--line);margin:12px 0}
+.small{font-size:12px}
+.tip{position:relative}
+.tip:hover::after{content:attr(data-tip);position:absolute;left:0;top:100%;margin-top:6px;z-index:10;background:var(--text);color:var(--bg);font-size:11.5px;padding:6px 8px;border-radius:7px;width:max-content;max-width:260px;white-space:normal}
+
+/* 원정대 드로어 */
+.drawer{position:fixed;inset:0 0 0 auto;width:min(380px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-8px 0 30px rgba(0,0,0,.15);z-index:20;padding:18px;overflow:auto;transform:translateX(100%);transition:transform .2s}
+.drawer.open{transform:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:19;display:none}
+.scrim.open{display:block}
+.sib-server{font-size:12px;color:var(--text-3);margin:14px 0 6px;font-weight:700}
+.sib{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.sib:hover{background:var(--surface-2)}
+.sib.cur{border-color:var(--accent);background:var(--accent-soft)}
+.sib .ilv{margin-left:auto;font-weight:700}
+
+/* ---------- 상태 화면 ---------- */
+.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.state{display:grid;gap:10px;justify-items:start}
+.state .big{font-size:30px;line-height:1}
+.state h3{margin:0;font-size:16px}
+.state p{margin:0;color:var(--text-2);font-size:13px}
+.state .tag{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--text-3)}
+.skel{background:linear-gradient(90deg,var(--surface-2) 0%,var(--line) 50%,var(--surface-2) 100%);background-size:200% 100%;animation:sh 1.3s infinite;border-radius:8px}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}.drawer{transition:none}}
+.meter{width:100%;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--warn)}
+
+[hidden]{display:none!important}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:1024px){
+  .grid{grid-template-columns:1fr}
+  .grid>.col:first-child{order:2}
+}
+@media (max-width:720px){
+  main{padding:12px 16px}
+  .topbar{padding:8px 16px;flex-wrap:wrap}
+  .logo b{display:none}
+  .search{order:3;flex-basis:100%;max-width:none}
+  .search kbd{display:none}
+  .profile{grid-template-columns:96px 1fr;gap:14px}
+  .portrait{width:96px;height:110px}
+  .portrait span{font-size:40px;margin-bottom:18px}
+  .pside{grid-column:1/-1;justify-items:stretch;grid-auto-flow:column}
+  .pmeta h1{font-size:22px}
+  .bignums{gap:18px}.bignums div b{font-size:18px}
+  .two{grid-template-columns:1fr}
+  .cardset{grid-template-columns:repeat(3,1fr)}
+  .keybox{flex-wrap:wrap}.keybox input{flex-basis:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="mock-nav" role="toolbar" aria-label="목업 화면 전환">
+  <b>목업 화면</b>
+  <button data-view="key" aria-pressed="false">① API 키</button>
+  <button data-view="char" aria-pressed="true">② 캐릭터</button>
+  <button data-view="states" aria-pressed="false">③ 상태 화면</button>
+  <span class="spacer"></span>
+  <button id="sibBtnMock">원정대 드로어 열기</button>
+</div>
+
+<header class="topbar">
+  <div class="logo"><i></i><b>모꼬꼬로아</b></div>
+  <form class="search" role="search" onsubmit="return false">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" aria-label="캐릭터명 검색" placeholder="캐릭터명 검색" value="은하수바리케이드">
+    <kbd>/</kbd>
+    <button class="btn primary" style="padding:5px 12px">검색</button>
+  </form>
+  <span class="spacer"></span>
+  <button class="chip" data-view="key" title="API 키 설정"><span class="dot"></span>키 저장됨 · <span class="num">잔여 ≈ 87/100</span></button>
+  <button class="btn ghost" id="theme" aria-label="테마 전환" title="테마: 시스템 → 라이트 → 다크">◐</button>
+</header>
+
+<!-- ============ ① API 키 화면 ============ -->
+<main id="view-key" hidden>
+  <div class="key-wrap">
+    <div class="key-hero">
+      <h1>Open API 키 설정</h1>
+      <div class="muted">로스트아크 Open API 키(JWT)를 넣으면 이 브라우저에서 바로 공식 API를 호출합니다. 키는 서버로 보내지 않고, Smilegate API 서버로만 전송됩니다.</div>
+    </div>
+
+    <section class="card">
+      <div class="field">
+        <label for="keyInput">API 키 (JWT)</label>
+        <div class="keybox">
+          <input id="keyInput" type="password" autocomplete="off" spellcheck="false" value="demo.fixture.sample" aria-describedby="keyHelp">
+          <button class="btn" id="eye" aria-label="키 표시/숨기기">보기</button>
+          <button class="btn">붙여넣기</button>
+        </div>
+        <div id="keyHelp" class="small faint">"bearer " 접두사 없이 토큰만 붙여넣으세요. 앞뒤 공백, 중괄호/꺾쇠는 자동으로 제거됩니다.</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="field">
+        <label>보관 방식</label>
+        <div class="radio-row">
+          <label class="radio"><input type="radio" name="store" checked><span><b>이 브라우저에 저장</b> (localStorage)<small>창을 닫아도 유지됩니다. 개인 기기에서만 권장합니다.</small></span></label>
+          <label class="radio"><input type="radio" name="store"><span><b>이번 탭에서만 사용</b> (sessionStorage)<small>탭을 닫으면 지워집니다. 공용 PC에서 권장합니다.</small></span></label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="actions">
+        <button class="btn primary">검증 후 저장</button>
+        <button class="btn">검증만 하기</button>
+        <span class="spacer"></span>
+        <button class="btn danger">키 삭제</button>
+      </div>
+      <div style="height:12px"></div>
+      <div class="notice ok" role="status">✓ <span><b>검증 성공.</b> 키가 정상입니다. 2026-11-25 16:04 저장됨 · 마지막 4자리 <code>…x7Qa</code></span></div>
+      <div style="height:8px"></div>
+      <div class="notice err" role="alert" hidden id="keyErr">✕ <span><b>401 · 키가 거부되었습니다.</b> 토큰이 잘렸거나 삭제된 클라이언트의 키일 수 있습니다.</span></div>
+    </section>
+
+    <section class="card">
+      <h2>키 발급 방법</h2>
+      <ol class="steps">
+        <li><a href="https://developer-lostark.game.onstove.com/" target="_blank" rel="noopener noreferrer">로스트아크 Open API 개발자 포털 ↗</a>에 스토브 계정으로 로그인합니다.</li>
+        <li><b>GET ACCESS TO LOSTARK API</b> 또는 <b>MY CLIENTS</b>에서 클라이언트를 만듭니다. 계정당 5개까지 만들 수 있습니다.</li>
+        <li>발급된 <b>API KEY</b>(JWT)를 복사해 위 칸에 붙여넣습니다. 키는 만료되지 않고, 클라이언트를 지우면 무효가 됩니다.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>보안 안내 <span class="sub">꼭 읽어 주세요</span></h2>
+      <div class="notice warn">⚠ <span>키는 <b>암호화되지 않은 상태로</b> 브라우저 저장소에 보관됩니다. 같은 기기의 다른 사용자, 브라우저 확장 프로그램, 이 사이트에서 실행되는 스크립트는 키를 읽을 수 있습니다.</span></div>
+      <ul class="steps" style="margin-top:10px">
+        <li>공용 PC에서는 "이번 탭에서만 사용"을 고르고, 다 쓰면 <b>키 삭제</b>를 누르세요.</li>
+        <li>키가 유출되었다면 포털에서 해당 클라이언트를 삭제하고 새 키를 발급하세요.</li>
+        <li>요청 한도는 클라이언트당 <b>분당 100회</b>이며, 이 앱은 한 번 검색할 때 1~2회를 씁니다.</li>
+      </ul>
+      <div class="divider"></div>
+      <dl class="kv">
+        <dt>저장 위치</dt><dd><code>localStorage["mokokoloa.apiKey.v1"]</code></dd>
+        <dt>전송 대상</dt><dd><code>developer-lostark.game.onstove.com</code>만</dd>
+        <dt>검증 요청</dt><dd><code>GET /news/alarms</code> · 1회 소모</dd>
+      </dl>
+    </section>
+  </div>
+</main>
+
+<!-- ============ ② 캐릭터 화면 ============ -->
+<main id="view-char">
+  <section class="card profile" id="profile"></section>
+  <div class="grid">
+    <div class="col">
+      <section class="card" id="arkpassive"></section>
+      <section class="card" id="arkgrid"></section>
+      <section class="card" id="engravings"></section>
+      <section class="card" id="cards"></section>
+    </div>
+    <div class="col">
+      <section class="card" id="gems"></section>
+      <div class="two">
+        <section class="card" id="equipment"></section>
+        <section class="card" id="accessories"></section>
+      </div>
+      <section class="card small faint" style="text-align:center">데이터 출처: 로스트아크 Open API · 조회 2026-11-25 16:05 (캐시 3분) · <button class="btn ghost small" style="padding:0 4px;color:var(--accent)">새로고침</button></section>
+    </div>
+  </div>
+</main>
+
+<!-- ============ ③ 상태 화면 모음 ============ -->
+<main id="view-states" hidden>
+  <p class="muted" style="margin-top:0">모든 상태는 캐릭터 화면의 본문 영역(프로필 아래)을 대신합니다. 상단 바는 항상 그대로 남습니다.</p>
+  <div class="states">
+    <section class="card state" aria-busy="true">
+      <span class="tag">loading</span>
+      <div class="row" style="width:100%"><div class="skel" style="width:72px;height:80px"></div><div style="flex:1;display:grid;gap:8px"><div class="skel" style="height:14px;width:40%"></div><div class="skel" style="height:22px;width:70%"></div><div class="skel" style="height:12px;width:55%"></div></div></div>
+      <div class="skel" style="height:60px;width:100%"></div>
+      <p>섹션 모양을 그대로 본뜬 스켈레톤. 0.3초가 지나야 보여 깜빡임을 막습니다.</p>
+    </section>
+    <section class="card state">
+      <span class="tag">no-key</span><div class="big">🔑</div>
+      <h3>API 키가 필요합니다</h3>
+      <p>검색하려면 로스트아크 Open API 키를 먼저 등록하세요. 키는 이 브라우저에만 저장됩니다.</p>
+      <div class="actions"><button class="btn primary" data-view="key">키 등록하기</button><a class="btn" href="https://developer-lostark.game.onstove.com/" target="_blank" rel="noopener noreferrer">키 발급받기 ↗</a></div>
+    </section>
+    <section class="card state">
+      <span class="tag">401 unauthorized</span><div class="big" style="color:var(--danger)">⛔</div>
+      <h3>API 키가 거부되었습니다</h3>
+      <p>키가 잘못 복사되었거나, 포털에서 클라이언트가 삭제되었을 수 있습니다. 저장된 키는 지우지 않고 "확인 필요"로 표시합니다.</p>
+      <div class="actions"><button class="btn primary" data-view="key">키 다시 입력</button><button class="btn">다시 시도</button></div>
+    </section>
+    <section class="card state">
+      <span class="tag">not-found (404 or 200+null)</span><div class="big">🔍</div>
+      <h3>'은하수바리케이트' 캐릭터를 찾을 수 없습니다</h3>
+      <p>이름을 다시 확인해 주세요. 막 만들었거나 이름을 바꾼 캐릭터는 반영까지 몇 분 걸릴 수 있습니다.</p>
+      <div class="actions"><span class="small faint">최근 검색:</span><button class="chip">은하수바리케이드</button><button class="chip">새벽별빛</button></div>
+    </section>
+    <section class="card state">
+      <span class="tag">429 rate limited</span><div class="big" style="color:var(--warn)">⏳</div>
+      <h3>요청 한도(분당 100회)를 넘었습니다</h3>
+      <p><b class="num">42초</b> 뒤 자동으로 다시 시도합니다. 그동안 캐시된 결과는 그대로 볼 수 있습니다.</p>
+      <div class="meter" aria-label="재시도까지 남은 시간"><i style="width:30%"></i></div>
+      <div class="actions"><button class="btn" disabled>지금 재시도 (42초)</button><button class="btn ghost">취소</button></div>
+    </section>
+    <section class="card state">
+      <span class="tag">503 maintenance</span><div class="big">🛠</div>
+      <h3>로스트아크 서버 점검 중입니다</h3>
+      <p>점검 중에는 Open API를 모두 쓸 수 없습니다. 자동 재시도는 하지 않고, 5분 간격으로 한 번 확인할 수 있는 버튼만 둡니다.</p>
+      <div class="actions"><button class="btn">상태 확인</button><a class="btn ghost" href="https://lostark.game.onstove.com/News/Notice/List" target="_blank" rel="noopener noreferrer">점검 공지 ↗</a></div>
+    </section>
+    <section class="card state">
+      <span class="tag">network / CORS / 5xx</span><div class="big">📡</div>
+      <h3>API 서버에 연결할 수 없습니다</h3>
+      <p>네트워크 오류이거나 브라우저가 요청을 막았을 수 있습니다(CORS). 프록시 모드를 켜고 다시 시도해 보세요.</p>
+      <div class="actions"><button class="btn primary">다시 시도</button></div>
+    </section>
+    <section class="card state">
+      <span class="tag">section-empty</span>
+      <h3 style="font-size:14px">아크 그리드 <span class="faint small">· 데이터 없음</span></h3>
+      <p>섹션 단위 빈 상태. 응답에서 해당 필드가 null이면 카드를 숨기지 않고 "장착한 코어가 없습니다"처럼 한 줄만 보여 줍니다.</p>
+    </section>
+  </div>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="원정대 캐릭터">
+  <div class="row"><h2 style="margin:0;font-size:16px">원정대 캐릭터</h2><span class="spacer"></span><button class="btn ghost" id="closeDrawer" aria-label="닫기">✕</button></div>
+  <div class="small faint" style="margin-top:4px">GET /characters/{name}/siblings · 아이템 레벨순</div>
+  <div id="sibList"></div>
+</aside>
+
+<script>
+/* ================= SAMPLE: 실제 응답 형태를 모방한 가짜 데이터 =================
+   _parsed.* 는 Tooltip 문자열을 파싱해서 얻는 값이라는 뜻(구현 시 parseTooltip 담당). */
+const SAMPLE = {
+  ArmoryProfile:{ServerName:"루페온",CharacterName:"은하수바리케이드",CharacterLevel:70,CharacterClassName:"홀리나이트",
+    ItemAvgLevel:"1,742.50",CombatPower:"2,518.37",ExpeditionLevel:312,Title:"빛을 지키는 자",GuildName:"새벽순찰대",GuildMemberGrade:"길드원",
+    TownName:"고요한 등대",TownLevel:70,HonorPoint:1845,
+    Stats:[{Type:"치명",Value:"612"},{Type:"특화",Value:"1876"},{Type:"신속",Value:"95"},{Type:"제압",Value:"74"},{Type:"인내",Value:"80"},{Type:"숙련",Value:"78"},{Type:"최대 생명력",Value:"412,330"},{Type:"공격력",Value:"168,205"}]},
+  ArmoryEquipment:[
+    {Type:"무기",Name:"+23 광휘의 수호 검",Grade:"고대",_parsed:{tier:4,quality:100,lvl:"1790"}},
+    {Type:"투구",Name:"+20 광휘의 수호 투구",Grade:"고대",_parsed:{tier:4,quality:96,lvl:"1775"}},
+    {Type:"상의",Name:"+20 광휘의 수호 상의",Grade:"고대",_parsed:{tier:4,quality:88,lvl:"1775"}},
+    {Type:"하의",Name:"+20 광휘의 수호 하의",Grade:"고대",_parsed:{tier:4,quality:91,lvl:"1775"}},
+    {Type:"장갑",Name:"+19 광휘의 수호 장갑",Grade:"고대",_parsed:{tier:4,quality:74,lvl:"1770"}},
+    {Type:"어깨",Name:"+20 광휘의 수호 견갑",Grade:"고대",_parsed:{tier:4,quality:100,lvl:"1775"}},
+    {Type:"목걸이",Name:"황혼의 별 목걸이",Grade:"고대",_parsed:{tier:4,quality:82,opts:[["상","추가 피해 +2.60%"],["중","적에게 주는 피해 +1.20%"],["하","공격력 +80"]]}},
+    {Type:"귀걸이",Name:"황혼의 별 귀걸이",Grade:"고대",_parsed:{tier:4,quality:67,opts:[["상","무기 공격력 +3.00%"],["중","공격력 +0.95%"]]}},
+    {Type:"귀걸이",Name:"황혼의 별 귀걸이",Grade:"유물",_parsed:{tier:4,quality:45,opts:[["중","무기 공격력 +1.80%"],["하","최대 생명력 +3250"]]}},
+    {Type:"반지",Name:"황혼의 별 반지",Grade:"고대",_parsed:{tier:4,quality:93,opts:[["상","치명타 적중률 +1.55%"],["중","치명타 피해 +2.40%"]]}},
+    {Type:"반지",Name:"황혼의 별 반지",Grade:"고대",_parsed:{tier:4,quality:58,opts:[["상","치명타 피해 +4.00%"],["하","아군 공격력 강화 +1.35%"]]}},
+    {Type:"어빌리티 스톤",Name:"위대한 비상의 돌",Grade:"고대",_parsed:{tier:4,engr:[["원한",3],["아드레날린",2],["공격력 감소",0]]}},
+    {Type:"팔찌",Name:"찬란한 구원자의 팔찌",Grade:"고대",_parsed:{tier:4,opts:[["상","타대 스킬 피해 +3.5%"],["중","치명 +84"],["중","특화 +101"]]}}
+  ],
+  ArmoryAvatars:[
+    {Type:"무기 아바타",Name:"새벽 성채 무기",Grade:"전설",IsInner:false},{Type:"머리 아바타",Name:"새벽 성채 투구",Grade:"전설",IsInner:false},
+    {Type:"상의 아바타",Name:"새벽 성채 상의",Grade:"전설",IsInner:false},{Type:"하의 아바타",Name:"새벽 성채 하의",Grade:"전설",IsInner:false},
+    {Type:"얼굴1 아바타",Name:"반짝이는 별 장식",Grade:"영웅",IsInner:false},{Type:"악기 아바타",Name:"은빛 하프",Grade:"희귀",IsInner:false}],
+  ArmoryGem:{Gems:[
+    {Slot:0,Level:10,Grade:"고대",Name:"10레벨 겁화의 보석",_parsed:{kind:"겁화",skill:"신성검"}},
+    {Slot:1,Level:10,Grade:"고대",Name:"10레벨 겁화의 보석",_parsed:{kind:"겁화",skill:"집행자의 검"}},
+    {Slot:2,Level:9,Grade:"유물",Name:"9레벨 겁화의 보석",_parsed:{kind:"겁화",skill:"빛의 해방"}},
+    {Slot:3,Level:9,Grade:"유물",Name:"9레벨 겁화의 보석",_parsed:{kind:"겁화",skill:"신성 지역"}},
+    {Slot:4,Level:8,Grade:"유물",Name:"8레벨 겁화의 보석",_parsed:{kind:"겁화",skill:"천상의 축복"}},
+    {Slot:5,Level:10,Grade:"고대",Name:"10레벨 작열의 보석",_parsed:{kind:"작열",skill:"신성검"}},
+    {Slot:6,Level:9,Grade:"유물",Name:"9레벨 작열의 보석",_parsed:{kind:"작열",skill:"집행자의 검"}},
+    {Slot:7,Level:9,Grade:"유물",Name:"9레벨 작열의 보석",_parsed:{kind:"작열",skill:"빛의 해방"}},
+    {Slot:8,Level:8,Grade:"유물",Name:"8레벨 작열의 보석",_parsed:{kind:"작열",skill:"신성 지역"}},
+    {Slot:9,Level:8,Grade:"유물",Name:"8레벨 작열의 보석",_parsed:{kind:"작열",skill:"정의의 검"}},
+    {Slot:10,Level:7,Grade:"영웅",Name:"7레벨 작열의 보석",_parsed:{kind:"작열",skill:"천상의 축복"}}]},
+  ArmoryEngraving:{ArkPassiveEffects:[
+    {Name:"원한",Grade:"유물",Level:4,AbilityStoneLevel:3},{Name:"아드레날린",Grade:"유물",Level:4,AbilityStoneLevel:2},
+    {Name:"돌격대장",Grade:"유물",Level:3,AbilityStoneLevel:null},{Name:"예리한 둔기",Grade:"전설",Level:4,AbilityStoneLevel:null},
+    {Name:"저주받은 인형",Grade:"전설",Level:2,AbilityStoneLevel:null}]},
+  ArmoryCard:{Cards:[
+    {Slot:0,Name:"빛의 수호자",AwakeCount:5,AwakeTotal:5,Grade:"전설"},{Slot:1,Name:"새벽의 기사",AwakeCount:5,AwakeTotal:5,Grade:"전설"},
+    {Slot:2,Name:"별의 인도자",AwakeCount:5,AwakeTotal:5,Grade:"전설"},{Slot:3,Name:"성채의 문지기",AwakeCount:5,AwakeTotal:5,Grade:"전설"},
+    {Slot:4,Name:"은빛 사제",AwakeCount:5,AwakeTotal:5,Grade:"전설"},{Slot:5,Name:"고요의 현자",AwakeCount:5,AwakeTotal:5,Grade:"전설"}],
+    Effects:[{Index:0,CardSlots:[0,1,2,3,4,5],Items:[
+      {Name:"세상을 구하는 빛 6세트",Description:"..."},{Name:"세상을 구하는 빛 6세트 (12각성합계)",Description:"..."},
+      {Name:"세상을 구하는 빛 6세트 (30각성합계)",Description:"성속성 피해 증가"}]}]},
+  ArkPassive:{IsArkPassive:true,Title:"광휘",Points:[{Name:"진화",Value:140,Description:"6랭크 25레벨"},{Name:"깨달음",Value:101,Description:"6랭크 19레벨"},{Name:"도약",Value:70,Description:"5랭크 20레벨"}],
+    Effects:[{Name:"진화",Description:"1티어 치명 Lv.30"},{Name:"진화",Description:"3티어 끝없는 정의 Lv.2"},{Name:"진화",Description:"4티어 일격 Lv.2"},
+      {Name:"깨달음",Description:"1티어 심판자 Lv.1"},{Name:"깨달음",Description:"2티어 신성한 축복 Lv.3"},{Name:"깨달음",Description:"3티어 빛의 검 Lv.2"},
+      {Name:"도약",Description:"1티어 초월적인 힘 Lv.5"},{Name:"도약",Description:"2티어 빛의 공명 Lv.3"}]},
+  ArkGrid:{Slots:[
+    {Index:0,Name:"질서의 해 코어 : 정의의 맹세",Point:19,Grade:"유물",Gems:[{IsActive:true,Grade:"영웅"},{IsActive:true,Grade:"전설"},{IsActive:true,Grade:"영웅"},{IsActive:false,Grade:"희귀"}]},
+    {Index:1,Name:"질서의 달 코어 : 빛의 파동",Point:18,Grade:"유물",Gems:[{IsActive:true,Grade:"전설"},{IsActive:true,Grade:"영웅"},{IsActive:true,Grade:"영웅"}]},
+    {Index:2,Name:"질서의 별 코어 : 수호의 서약",Point:20,Grade:"고대",Gems:[{IsActive:true,Grade:"유물"},{IsActive:true,Grade:"전설"},{IsActive:true,Grade:"전설"},{IsActive:true,Grade:"영웅"}]},
+    {Index:3,Name:"혼돈의 해 코어 : 찬란한 공격",Point:18,Grade:"유물",Gems:[{IsActive:true,Grade:"영웅"},{IsActive:true,Grade:"영웅"},{IsActive:false,Grade:"희귀"}]},
+    {Index:4,Name:"혼돈의 달 코어 : 불꽃 일격",Point:17,Grade:"전설",Gems:[{IsActive:true,Grade:"영웅"},{IsActive:true,Grade:"희귀"},{IsActive:false,Grade:"고급"}]},
+    {Index:5,Name:"혼돈의 별 코어 : 공격",Point:19,Grade:"유물",Gems:[{IsActive:true,Grade:"전설"},{IsActive:true,Grade:"영웅"},{IsActive:true,Grade:"영웅"}]}],
+    Effects:[{Name:"공격력",Level:26},{Name:"추가 피해",Level:65},{Name:"보스 피해",Level:11},{Name:"낙인력",Level:17},{Name:"아군 공격 강화",Level:1},{Name:"아군 피해 강화",Level:11}]}
+};
+const SIBLINGS=[
+  {ServerName:"루페온",CharacterName:"은하수바리케이드",CharacterLevel:70,CharacterClassName:"홀리나이트",ItemAvgLevel:"1,742.50"},
+  {ServerName:"루페온",CharacterName:"새벽별빛",CharacterLevel:70,CharacterClassName:"바드",ItemAvgLevel:"1,720.00"},
+  {ServerName:"루페온",CharacterName:"모래시계장인",CharacterLevel:70,CharacterClassName:"소서리스",ItemAvgLevel:"1,700.83"},
+  {ServerName:"루페온",CharacterName:"초록우체통",CharacterLevel:70,CharacterClassName:"기상술사",ItemAvgLevel:"1,680.00"},
+  {ServerName:"루페온",CharacterName:"강철주먹씨",CharacterLevel:68,CharacterClassName:"인파이터",ItemAvgLevel:"1,640.17"},
+  {ServerName:"실리안",CharacterName:"구름빵가게",CharacterLevel:60,CharacterClassName:"아르카나",ItemAvgLevel:"1,445.00"}];
+
+/* ================= 렌더링 ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const qClass=q=>q>=100?5:q>=90?4:q>=70?3:q>=30?2:q>=10?1:0;
+const ico=(grade,label,{tier,badge,sm}={})=>`<div class="ico${sm?" sm":""}" data-grade="${grade}">${tier?`<span class="tier">${tier}T</span>`:""}${esc(label)}${badge!=null?`<span class="badge">${badge}</span>`:""}</div>`;
+const short=t=>t.replace(/ 아바타$/,"").slice(0,2);
+
+function renderProfile(p){
+  const top=["치명","특화","신속","제압","인내","숙련"].map(t=>p.Stats.find(s=>s.Type===t)).filter(Boolean);
+  $("#profile").innerHTML=`
+  <div class="portrait"><span>${esc(p.CharacterClassName[0])}</span><small>CharacterImage</small></div>
+  <div class="pmeta">
+    <div class="line1"><span class="pill gpill" data-grade="희귀">${esc(p.ServerName)}</span><span>${esc(p.CharacterClassName)}</span>·<span>Lv.${p.CharacterLevel}</span>·<span>원정대 Lv.${p.ExpeditionLevel}</span></div>
+    <h1>${esc(p.CharacterName)} <small>${esc(p.Title)}</small></h1>
+    <div class="bignums">
+      <div><b class="num">${esc(p.ItemAvgLevel)}</b><span>아이템 레벨</span></div>
+      <div><b class="num">${esc(p.CombatPower)}</b><span>전투력</span></div>
+      <div><b class="num">${p.HonorPoint.toLocaleString()}</b><span>명예</span></div>
+    </div>
+    <div class="stats">${top.map(s=>`<span class="stat">${s.Type}<b class="num">${s.Value}</b></span>`).join("")}
+      <span class="stat faint">길드 <b>${esc(p.GuildName)}</b></span><span class="stat faint">영지 <b>${esc(p.TownName)} Lv.${p.TownLevel}</b></span></div>
+  </div>
+  <div class="pside">
+    <button class="btn primary" id="sibBtn">원정대 캐릭터 6 ▸</button>
+    <button class="btn small">☆ 즐겨찾기</button>
+  </div>`;
+  $("#sibBtn").onclick=openDrawer;
+}
+function renderArkPassive(a){
+  const groups=["진화","깨달음","도약"];
+  $("#arkpassive").innerHTML=`<h2>아크 패시브 <span class="sub">${esc(a.Title)}</span>${a.IsArkPassive?'<span class="right pill gpill" data-grade="에스더">활성</span>':""}</h2>
+  <div class="ap-points">${a.Points.map(p=>`<div><b class="num">${p.Value}</b><span>${p.Name} · ${esc(p.Description)}</span></div>`).join("")}</div>
+  ${groups.map(g=>`<div class="small" style="margin:6px 0"><b>${g}</b> <span class="muted">${a.Effects.filter(e=>e.Name===g).map(e=>esc(e.Description)).join(" · ")}</span></div>`).join("")}`;
+}
+function renderArkGrid(g){
+  const order=s=>s.Name.includes("질서")?"질서":"혼돈";
+  const sum=t=>g.Slots.filter(s=>order(s)===t).map(s=>s.Point).reduce((a,b)=>a+b,0);
+  $("#arkgrid").innerHTML=`<h2>아크 그리드 <span class="right small muted">질서 <b class="num">${sum("질서")}P</b> · 혼돈 <b class="num">${sum("혼돈")}P</b></span></h2>
+  <div class="cores">${g.Slots.map(s=>{const [head,name]=s.Name.split(" : ");return `<div class="core tip" data-grade="${s.Grade}" data-tip="${esc(s.Name)} · ${s.Grade} · 젬 ${s.Gems.filter(x=>x.IsActive).length}/${s.Gems.length} 활성">
+    ${ico(s.Grade,head.includes("해")?"☀":head.includes("달")?"☾":"✦",{sm:1})}
+    <div style="min-width:0"><div class="small faint">${esc(head.replace(" 코어",""))}</div><div class="gtext" style="font-size:13px">${esc(name)} <span class="num">(${s.Point}P)</span></div></div>
+    <div class="gemdots">${s.Gems.map(x=>`<i data-grade="${x.Grade}" class="${x.IsActive?"":"off"}"></i>`).join("")}</div></div>`}).join("")}</div>
+  <div class="divider"></div>
+  <div class="small" style="display:grid;grid-template-columns:1fr auto;gap:3px 10px">${g.Effects.map(e=>`<span class="${e.Level<5?"faint":""}">${esc(e.Name)}</span><b class="num ${e.Level<5?"faint":""}">Lv.${e.Level}</b>`).join("")}</div>`;
+}
+function renderEngr(e){
+  $("#engravings").innerHTML=`<h2>각인 <span class="sub">ArkPassiveEffects</span></h2><div class="list engr">${e.ArkPassiveEffects.map(x=>`
+    <div class="row" data-grade="${x.Grade}">${ico(x.Grade,x.Name[0],{sm:1})}
+    <div style="flex:1;min-width:0"><div style="font-weight:600">${esc(x.Name)} ${x.AbilityStoneLevel?`<span class="pill gpill" data-grade="희귀">돌 +${x.AbilityStoneLevel}</span>`:""}</div>
+    <div class="row" style="gap:6px"><span class="small gtext">${x.Grade}</span><span class="lvl">${[1,2,3,4].map(i=>`<i class="${i<=x.Level?"on":""}"></i>`).join("")}</span></div></div>
+    <b class="num">Lv.${x.Level}</b></div>`).join("")}</div>`;
+}
+function renderCards(c){
+  const total=c.Cards.reduce((a,x)=>a+x.AwakeCount,0);
+  const active=c.Effects[0].Items.at(-1).Name;
+  $("#cards").innerHTML=`<h2>카드 <span class="right small muted">각성 합 <b class="num">${total}</b></span></h2>
+  <div class="cardset">${c.Cards.map(x=>`<div class="tcard" data-grade="${x.Grade}">${esc(x.Name)}<div class="awake">${Array.from({length:x.AwakeTotal},(_,i)=>`<i class="${i<x.AwakeCount?"on":""}"></i>`).join("")}</div></div>`).join("")}</div>
+  <div class="small"><span class="pill gpill" data-grade="전설">세트</span> ${esc(active)}</div>`;
+}
+function renderGems(g){
+  const kinds=["겁화","작열"];
+  $("#gems").innerHTML=`<h2>보석 <span class="sub">${g.Gems.length}개</span><span class="right small muted">${kinds.map(k=>{const a=g.Gems.filter(x=>x._parsed.kind===k);return `${k} ${a.length} · 평균 Lv.${(a.reduce((s,x)=>s+x.Level,0)/a.length).toFixed(1)}`}).join("  |  ")}</span></h2>
+  <div class="gems">${g.Gems.map(x=>`<div class="gem tip" data-tip="${esc(x.Name)} · ${esc(x._parsed.skill)}"><div class="ico" data-grade="${x.Grade}"><span class="lv">${x.Level}</span>${x._parsed.kind==="겁화"?"火":"炎"}</div><span>${esc(x._parsed.skill.slice(0,5))}</span></div>`).join("")}</div>`;
+}
+let eqTab="equip";
+function renderEquipment(list,avatars){
+  const armor=list.filter(x=>["무기","투구","상의","하의","장갑","어깨"].includes(x.Type));
+  const body=eqTab==="equip"?armor.map(x=>`<div class="row eq">${ico(x.Grade,x.Type[0],{tier:x._parsed.tier,badge:x._parsed.quality})}
+      <div style="min-width:0"><div class="name"><span class="gtext" data-grade="${x.Grade}">${esc(x.Name.split(" ")[0])}</span> ${esc(x.Type)}</div>
+      <div class="meta"><span class="q q${qClass(x._parsed.quality)}">품질 ${x._parsed.quality}</span><span class="num">iLv ${x._parsed.lvl}</span></div></div></div>`).join("")
+    :avatars.map(x=>`<div class="row eq">${ico(x.Grade,short(x.Type))}<div style="min-width:0"><div class="name">${esc(x.Name)}</div><div class="meta"><span class="gtext" data-grade="${x.Grade}">${x.Grade}</span>${esc(x.Type)}</div></div></div>`).join("");
+  $("#equipment").innerHTML=`<h2>장비 <div class="tabs" role="tablist"><button role="tab" aria-selected="${eqTab==="equip"}" data-t="equip">장비</button><button role="tab" aria-selected="${eqTab==="avatar"}" data-t="avatar">아바타</button></div></h2><div class="equip">${body}</div>`;
+  $("#equipment").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{eqTab=b.dataset.t;renderEquipment(list,avatars)});
+}
+function renderAcc(list){
+  const acc=list.filter(x=>["목걸이","귀걸이","반지","어빌리티 스톤","팔찌"].includes(x.Type));
+  const cls={상:"opt-hi",중:"opt-mid",하:"opt-lo"};
+  $("#accessories").innerHTML=`<h2>악세사리</h2><div class="list">${acc.map(x=>{
+    const p=x._parsed; let detail="";
+    if(p.opts) detail=p.opts.map(([g,t])=>`<div><span class="pill ${cls[g]}">${g}</span><span>${esc(t)}</span></div>`).join("");
+    if(p.engr) detail=`<div>${p.engr.map(([n,v])=>`<span class="${v===0?"":""}" style="${n.includes("감소")?"color:var(--danger)":""}">${esc(n)} <b class="num">${v}</b></span>`).join(" · ")}</div>`;
+    return `<div class="row acc" style="align-items:flex-start">${ico(x.Grade,x.Type[0],{tier:p.tier,badge:p.quality!=null?p.quality:x.Grade})}
+      <div style="min-width:0"><div class="small"><span class="gtext" data-grade="${x.Grade}">${x.Grade}</span> <span class="muted">${esc(x.Type)}</span>${p.quality!=null?` <span class="q q${qClass(p.quality)}">${p.quality}</span>`:""}</div><div class="opts">${detail}</div></div></div>`}).join("")}</div>`;
+}
+function renderSiblings(cur){
+  const by={};SIBLINGS.forEach(s=>(by[s.ServerName]??=[]).push(s));
+  $("#sibList").innerHTML=Object.entries(by).map(([sv,arr])=>`<div class="sib-server">${esc(sv)} · ${arr.length}</div>`+
+    arr.sort((a,b)=>parseFloat(b.ItemAvgLevel.replace(/,/g,""))-parseFloat(a.ItemAvgLevel.replace(/,/g,""))).map(s=>`<div class="sib ${s.CharacterName===cur?"cur":""}" role="button" tabindex="0">
+      ${ico("희귀",s.CharacterClassName[0],{sm:1})}<div><div style="font-weight:600">${esc(s.CharacterName)}</div><div class="small muted">${esc(s.CharacterClassName)} · Lv.${s.CharacterLevel}</div></div><span class="ilv num">${s.ItemAvgLevel}</span></div>`).join("")).join("");
+}
+function openDrawer(){$("#drawer").classList.add("open");$("#scrim").classList.add("open")}
+function closeDrawer(){$("#drawer").classList.remove("open");$("#scrim").classList.remove("open")}
+
+renderProfile(SAMPLE.ArmoryProfile);renderArkPassive(SAMPLE.ArkPassive);renderArkGrid(SAMPLE.ArkGrid);
+renderEngr(SAMPLE.ArmoryEngraving);renderCards(SAMPLE.ArmoryCard);renderGems(SAMPLE.ArmoryGem);
+renderEquipment(SAMPLE.ArmoryEquipment,SAMPLE.ArmoryAvatars);renderAcc(SAMPLE.ArmoryEquipment);renderSiblings(SAMPLE.ArmoryProfile.CharacterName);
+
+/* 화면 전환(목업 전용) + 해시 지원: #key #char #states #drawer, ?theme=dark|light */
+function show(v){["key","char","states"].forEach(n=>$("#view-"+n).hidden=n!==v);
+  document.querySelectorAll(".mock-nav [data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===v))}
+document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));
+$("#sibBtnMock").onclick=()=>{show("char");openDrawer()};$("#closeDrawer").onclick=closeDrawer;$("#scrim").onclick=closeDrawer;
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer();if(e.key==="/"&&document.activeElement.tagName!=="INPUT"){e.preventDefault();$("#q").focus()}});
+$("#eye").onclick=()=>{const i=$("#keyInput");i.type=i.type==="password"?"text":"password";$("#eye").textContent=i.type==="password"?"보기":"숨기기"};
+const themes=[null,"light","dark"];let ti=0;
+try{const t=localStorage.getItem("mokokoloa.theme");if(t){document.documentElement.dataset.theme=t;ti=themes.indexOf(t)}}catch(e){}
+$("#theme").onclick=()=>{ti=(ti+1)%3;const t=themes[ti];if(t)document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;try{t?localStorage.setItem("mokokoloa.theme",t):localStorage.removeItem("mokokoloa.theme")}catch(e){}};
+const P=new URLSearchParams(location.search);if(P.get("theme"))document.documentElement.dataset.theme=P.get("theme");
+const h=location.hash.slice(1);if(["key","char","states"].includes(h))show(h);if(h==="drawer"){show("char");openDrawer()}
+</script>
+</body>
+</html>

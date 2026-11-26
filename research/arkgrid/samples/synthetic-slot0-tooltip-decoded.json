@@ -1,0 +1,88 @@
+{
+  "Element_000": {
+    "type": "NameTagBox",
+    "value": "<P ALIGN='CENTER'><FONT COLOR='#F99200'>질서의 해 코어 : 예시 연격</FONT></P>"
+  },
+  "Element_001": {
+    "type": "ItemTitle",
+    "value": {
+      "bEquip": 0,
+      "itemIrochiCount": 0,
+      "leftStr0": "<FONT SIZE='12'><FONT COLOR='#F99200'>전설 아크 그리드 코어</FONT></FONT>",
+      "leftStr1": "",
+      "leftStr2": "",
+      "qualityValue": -1,
+      "rightStr0": "",
+      "slotData": {
+        "advBookIcon": 0,
+        "battleItemTypeIcon": 0,
+        "blackListIcon": 0,
+        "cardIcon": false,
+        "friendship": 0,
+        "iconGrade": 4,
+        "iconPath": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_13_96.png",
+        "imagePath": "",
+        "islandIcon": 0,
+        "petBorder": 0,
+        "rtString": "",
+        "seal": false,
+        "temporary": 0,
+        "town": 0,
+        "trash": 0
+      }
+    }
+  },
+  "Element_002": {
+    "type": "SingleTextBox",
+    "value": "<FONT SIZE='12'>예시 직업 전용</FONT>"
+  },
+  "Element_003": {
+    "type": "MultiTextBox",
+    "value": "|<font color='#C24B46'>거래 불가</font>"
+  },
+  "Element_004": {
+    "type": "ItemPartBox",
+    "value": {
+      "Element_000": "<FONT COLOR='#A9D0F5'>코어 타입</FONT>",
+      "Element_001": "질서 - 해"
+    }
+  },
+  "Element_005": {
+    "type": "ItemPartBox",
+    "value": {
+      "Element_000": "<FONT COLOR='#A9D0F5'>코어 공급 의지력</FONT>",
+      "Element_001": "<FONT COLOR = '#B7FB00'>12</FONT> 포인트"
+    }
+  },
+  "Element_006": {
+    "type": "ItemPartBox",
+    "value": {
+      "Element_000": "<FONT COLOR='#A9D0F5'>코어 옵션</FONT>",
+      "Element_001": "<FONT color='#FFD200'>[10P]</FONT> 예시 연격 스킬의 피해량이 <FONT COLOR='#99ff99'>3.0%</FONT> 증가한다.<br><FONT color='#FFD200'>[14P]</FONT> 예시 연격 스킬의 피해량이 <FONT COLOR='#99ff99'>4.0%</FONT> 증가하고, <FONT COLOR='#bf9ef6'>'운명'</FONT> 발동 시 <FONT COLOR='#ffff99'>6.0</FONT>초 동안 <FONT COLOR='#bf9ef6'>'운명: 예시 방벽'</FONT> 효과를 획득한다.<BR><FONT COLOR='#bf9ef6'>'운명: 예시 방벽'</FONT> : 최대 생명력의 <FONT COLOR='#99ff99'>20.0%</FONT>에 해당하는 보호막이 생성된다."
+    }
+  },
+  "Element_007": {
+    "type": "ItemPartBox",
+    "value": {
+      "Element_000": "<FONT COLOR='#A9D0F5'>코어 옵션 발동 조건</FONT>",
+      "Element_001": "<img src='emoticon_sign_greenDot' width='0' height='0' vspace='-3'></img>아크 패시브 예시 노드 활성화 필요"
+    }
+  },
+  "Element_008": null,
+  "Element_009": {
+    "type": "SingleTextBox",
+    "value": "<FONT SIZE='12'><FONT COLOR='#C24B46'>분해불가</FONT></FONT>"
+  },
+  "Element_010": {
+    "type": "Progress",
+    "value": null
+  },
+  "Element_011": {
+    "type": "Progress",
+    "value": null
+  },
+  "Element_012": {
+    "type": "SingleTextBox",
+    "value": "<Font color='#5FD3F1'>[예시 콘텐츠] 획득처 1</font><BR><Font color='#5FD3F1'>[예시 콘텐츠] 획득처 2</font>"
+  }
+}

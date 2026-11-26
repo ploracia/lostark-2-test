@@ -1,0 +1,635 @@
+{
+  "ArmoryProfile": {
+    "ServerName": "루페온",
+    "CharacterName": "은하수바리케이드",
+    "CharacterLevel": 70,
+    "CharacterClassName": "홀리나이트",
+    "ItemAvgLevel": "1,742.50",
+    "CombatPower": "2,518.37",
+    "ExpeditionLevel": 312,
+    "Title": "빛을 지키는 자",
+    "GuildName": "새벽순찰대",
+    "GuildMemberGrade": "길드원",
+    "TownName": "고요한 등대",
+    "TownLevel": 70,
+    "HonorPoint": 1845,
+    "Stats": [
+      {
+        "Type": "치명",
+        "Value": "612"
+      },
+      {
+        "Type": "특화",
+        "Value": "1876"
+      },
+      {
+        "Type": "신속",
+        "Value": "95"
+      },
+      {
+        "Type": "제압",
+        "Value": "74"
+      },
+      {
+        "Type": "인내",
+        "Value": "80"
+      },
+      {
+        "Type": "숙련",
+        "Value": "78"
+      },
+      {
+        "Type": "최대 생명력",
+        "Value": "412,330"
+      },
+      {
+        "Type": "공격력",
+        "Value": "168,205"
+      }
+    ]
+  },
+  "ArmoryEquipment": [
+    {
+      "Type": "무기",
+      "Name": "+23 광휘의 수호 검",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_010\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":100,\"leftStr2\":\"아이템 레벨 1790<BR><FONT>티어 4</FONT>\",\"leftStr0\":\"고대 무기\"}}}"
+    },
+    {
+      "Type": "투구",
+      "Name": "+20 광휘의 수호 투구",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_011\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":96,\"leftStr2\":\"아이템 레벨 1775<BR><FONT>티어 4</FONT>\",\"leftStr0\":\"고대 투구\"}},\"Element_031\":{\"type\":\"SingleTextBox\",\"value\":\"[상급 재련] 20단계\"}}"
+    },
+    {
+      "Type": "상의",
+      "Name": "+20 광휘의 수호 상의",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_012\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":88,\"leftStr2\":\"아이템 레벨 1775<BR><FONT>티어 4</FONT>\",\"leftStr0\":\"고대 상의\"}}}"
+    },
+    {
+      "Type": "하의",
+      "Name": "+20 광휘의 수호 하의",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_013\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":91,\"leftStr2\":\"아이템 레벨 1775<BR><FONT>티어 4</FONT>\",\"leftStr0\":\"고대 하의\"}}}"
+    },
+    {
+      "Type": "장갑",
+      "Name": "+19 광휘의 수호 장갑",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_014\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":74,\"leftStr2\":\"아이템 레벨 1770<BR><FONT>티어 4</FONT>\",\"leftStr0\":\"고대 장갑\"}}}"
+    },
+    {
+      "Type": "어깨",
+      "Name": "+20 광휘의 수호 견갑",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_015\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":100,\"leftStr2\":\"아이템 레벨 1775<BR><FONT>티어 4</FONT>\",\"leftStr0\":\"고대 어깨\"}}}"
+    },
+    {
+      "Type": "목걸이",
+      "Name": "황혼의 별 목걸이",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_016\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":82,\"leftStr2\":\"<FONT>티어 4</FONT>\",\"leftStr0\":\"고대 목걸이\"}},\"Element_042\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_003\":\"연마 효과\",\"Element_020\":\"[상] 추가 피해 +2.60%<BR>[중] 적에게 주는 피해 +1.20%<BR>[하] 공격력 +80\"}}}"
+    },
+    {
+      "Type": "귀걸이",
+      "Name": "황혼의 별 귀걸이",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_017\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":67,\"leftStr2\":\"<FONT>티어 4</FONT>\",\"leftStr0\":\"고대 귀걸이\"}},\"Element_042\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_003\":\"연마 효과\",\"Element_020\":\"[상] 무기 공격력 +3.00%<BR>[중] 공격력 +0.95%\"}}}"
+    },
+    {
+      "Type": "귀걸이",
+      "Name": "황혼의 별 귀걸이",
+      "Grade": "유물",
+      "Tooltip": "{\"Element_018\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":45,\"leftStr2\":\"<FONT>티어 4</FONT>\",\"leftStr0\":\"유물 귀걸이\"}},\"Element_042\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_003\":\"연마 효과\",\"Element_020\":\"[중] 무기 공격력 +1.80%<BR>[하] 최대 생명력 +3250\"}}}"
+    },
+    {
+      "Type": "반지",
+      "Name": "황혼의 별 반지",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_019\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":93,\"leftStr2\":\"<FONT>티어 4</FONT>\",\"leftStr0\":\"고대 반지\"}},\"Element_042\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_003\":\"연마 효과\",\"Element_020\":\"[상] 치명타 적중률 +1.55%<BR>[중] 치명타 피해 +2.40%\"}}}"
+    },
+    {
+      "Type": "반지",
+      "Name": "황혼의 별 반지",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_020\":{\"type\":\"ItemTitle\",\"value\":{\"qualityValue\":58,\"leftStr2\":\"<FONT>티어 4</FONT>\",\"leftStr0\":\"고대 반지\"}},\"Element_042\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_003\":\"연마 효과\",\"Element_020\":\"[상] 치명타 피해 +4.00%<BR>[하] 아군 공격력 강화 +1.35%\"}}}"
+    },
+    {
+      "Type": "어빌리티 스톤",
+      "Name": "위대한 비상의 돌",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_021\":{\"type\":\"ItemTitle\",\"value\":{\"leftStr2\":\"<FONT>티어 4</FONT>\",\"qualityValue\":-1,\"leftStr0\":\"고대 어빌리티 스톤\"}},\"Element_009\":{\"type\":\"IndentStringGroup\",\"value\":{\"Element_017\":{\"topStr\":\"무작위 각인 효과\",\"contentStr\":{\"Element_70\":{\"contentStr\":\"[원한] Lv.3\"},\"Element_71\":{\"contentStr\":\"[아드레날린] Lv.2\"},\"Element_72\":{\"contentStr\":\"[공격력 감소] Lv.0\"}}}}}}"
+    },
+    {
+      "Type": "팔찌",
+      "Name": "찬란한 구원자의 팔찌",
+      "Grade": "고대",
+      "Tooltip": "{\"Element_022\":{\"type\":\"ItemTitle\",\"value\":{\"leftStr2\":\"<FONT>티어 4</FONT>\",\"qualityValue\":-1,\"leftStr0\":\"고대 팔찌\"}},\"Element_042\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_003\":\"팔찌 효과\",\"Element_020\":\"<img src='emoticon_tooltip_bracelet_changeable'>[상] 타대 스킬 피해 +3.5%<br /><img src='emoticon_tooltip_bracelet_locked'>[중] 치명 +84<br /><img src='emoticon_tooltip_bracelet_locked'>[중] 특화 +101\"}}}"
+    }
+  ],
+  "ArmoryAvatars": [
+    {
+      "Type": "무기 아바타",
+      "Name": "새벽 성채 무기",
+      "Grade": "전설",
+      "IsInner": false,
+      "IsSet": true
+    },
+    {
+      "Type": "머리 아바타",
+      "Name": "새벽 성채 투구",
+      "Grade": "전설",
+      "IsInner": false,
+      "IsSet": true
+    },
+    {
+      "Type": "상의 아바타",
+      "Name": "새벽 성채 상의",
+      "Grade": "전설",
+      "IsInner": false,
+      "IsSet": true
+    },
+    {
+      "Type": "하의 아바타",
+      "Name": "새벽 성채 하의",
+      "Grade": "전설",
+      "IsInner": false,
+      "IsSet": true
+    },
+    {
+      "Type": "얼굴1 아바타",
+      "Name": "반짝이는 별 장식",
+      "Grade": "영웅",
+      "IsInner": false,
+      "IsSet": false
+    },
+    {
+      "Type": "악기 아바타",
+      "Name": "은빛 하프",
+      "Grade": "희귀",
+      "IsInner": false,
+      "IsSet": false
+    }
+  ],
+  "ArmoryGem": {
+    "Gems": [
+      {
+        "Slot": 0,
+        "Level": 10,
+        "Grade": "고대",
+        "Name": "10레벨 겁화의 보석"
+      },
+      {
+        "Slot": 1,
+        "Level": 10,
+        "Grade": "고대",
+        "Name": "10레벨 겁화의 보석"
+      },
+      {
+        "Slot": 2,
+        "Level": 9,
+        "Grade": "유물",
+        "Name": "9레벨 겁화의 보석"
+      },
+      {
+        "Slot": 3,
+        "Level": 9,
+        "Grade": "유물",
+        "Name": "9레벨 겁화의 보석"
+      },
+      {
+        "Slot": 4,
+        "Level": 8,
+        "Grade": "유물",
+        "Name": "8레벨 겁화의 보석"
+      },
+      {
+        "Slot": 5,
+        "Level": 10,
+        "Grade": "고대",
+        "Name": "10레벨 작열의 보석"
+      },
+      {
+        "Slot": 6,
+        "Level": 9,
+        "Grade": "유물",
+        "Name": "9레벨 작열의 보석"
+      },
+      {
+        "Slot": 7,
+        "Level": 9,
+        "Grade": "유물",
+        "Name": "9레벨 작열의 보석"
+      },
+      {
+        "Slot": 8,
+        "Level": 8,
+        "Grade": "유물",
+        "Name": "8레벨 작열의 보석"
+      },
+      {
+        "Slot": 9,
+        "Level": 8,
+        "Grade": "유물",
+        "Name": "8레벨 작열의 보석"
+      },
+      {
+        "Slot": 10,
+        "Level": 7,
+        "Grade": "영웅",
+        "Name": "7레벨 작열의 보석"
+      }
+    ],
+    "Effects": {
+      "Skills": [
+        {
+          "GemSlot": 0,
+          "Name": "신성검",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 1,
+          "Name": "집행자의 검",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 2,
+          "Name": "빛의 해방",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 3,
+          "Name": "신성 지역",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 4,
+          "Name": "천상의 축복",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 5,
+          "Name": "신성검",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 6,
+          "Name": "집행자의 검",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 7,
+          "Name": "빛의 해방",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 8,
+          "Name": "신성 지역",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 9,
+          "Name": "정의의 검",
+          "Option": "",
+          "Description": []
+        },
+        {
+          "GemSlot": 10,
+          "Name": "천상의 축복",
+          "Option": "",
+          "Description": []
+        }
+      ]
+    }
+  },
+  "ArmoryEngraving": {
+    "ArkPassiveEffects": [
+      {
+        "Name": "원한",
+        "Grade": "유물",
+        "Level": 4,
+        "AbilityStoneLevel": 3
+      },
+      {
+        "Name": "아드레날린",
+        "Grade": "유물",
+        "Level": 4,
+        "AbilityStoneLevel": 2
+      },
+      {
+        "Name": "돌격대장",
+        "Grade": "유물",
+        "Level": 3,
+        "AbilityStoneLevel": null
+      },
+      {
+        "Name": "예리한 둔기",
+        "Grade": "전설",
+        "Level": 4,
+        "AbilityStoneLevel": null
+      },
+      {
+        "Name": "저주받은 인형",
+        "Grade": "전설",
+        "Level": 2,
+        "AbilityStoneLevel": null
+      }
+    ]
+  },
+  "ArmoryCard": {
+    "Cards": [
+      {
+        "Slot": 0,
+        "Name": "빛의 수호자",
+        "AwakeCount": 5,
+        "AwakeTotal": 5,
+        "Grade": "전설"
+      },
+      {
+        "Slot": 1,
+        "Name": "새벽의 기사",
+        "AwakeCount": 5,
+        "AwakeTotal": 5,
+        "Grade": "전설"
+      },
+      {
+        "Slot": 2,
+        "Name": "별의 인도자",
+        "AwakeCount": 5,
+        "AwakeTotal": 5,
+        "Grade": "전설"
+      },
+      {
+        "Slot": 3,
+        "Name": "성채의 문지기",
+        "AwakeCount": 5,
+        "AwakeTotal": 5,
+        "Grade": "전설"
+      },
+      {
+        "Slot": 4,
+        "Name": "은빛 사제",
+        "AwakeCount": 5,
+        "AwakeTotal": 5,
+        "Grade": "전설"
+      },
+      {
+        "Slot": 5,
+        "Name": "고요의 현자",
+        "AwakeCount": 5,
+        "AwakeTotal": 5,
+        "Grade": "전설"
+      }
+    ],
+    "Effects": [
+      {
+        "Index": 0,
+        "CardSlots": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "Items": [
+          {
+            "Name": "세상을 구하는 빛 6세트",
+            "Description": "..."
+          },
+          {
+            "Name": "세상을 구하는 빛 6세트 (12각성합계)",
+            "Description": "..."
+          },
+          {
+            "Name": "세상을 구하는 빛 6세트 (30각성합계)",
+            "Description": "성속성 피해 증가"
+          }
+        ]
+      }
+    ]
+  },
+  "ArkPassive": {
+    "IsArkPassive": true,
+    "Title": "광휘",
+    "Points": [
+      {
+        "Name": "진화",
+        "Value": 140,
+        "Description": "6랭크 25레벨"
+      },
+      {
+        "Name": "깨달음",
+        "Value": 101,
+        "Description": "6랭크 19레벨"
+      },
+      {
+        "Name": "도약",
+        "Value": 70,
+        "Description": "5랭크 20레벨"
+      }
+    ],
+    "Effects": [
+      {
+        "Name": "진화",
+        "Description": "1티어 치명 Lv.30"
+      },
+      {
+        "Name": "진화",
+        "Description": "3티어 끝없는 정의 Lv.2"
+      },
+      {
+        "Name": "진화",
+        "Description": "4티어 일격 Lv.2"
+      },
+      {
+        "Name": "깨달음",
+        "Description": "1티어 심판자 Lv.1"
+      },
+      {
+        "Name": "깨달음",
+        "Description": "2티어 신성한 축복 Lv.3"
+      },
+      {
+        "Name": "깨달음",
+        "Description": "3티어 빛의 검 Lv.2"
+      },
+      {
+        "Name": "도약",
+        "Description": "1티어 초월적인 힘 Lv.5"
+      },
+      {
+        "Name": "도약",
+        "Description": "2티어 빛의 공명 Lv.3"
+      }
+    ]
+  },
+  "ArkGrid": {
+    "Slots": [
+      {
+        "Index": 0,
+        "Name": "질서의 해 코어 : 정의의 맹세",
+        "Point": 19,
+        "Grade": "유물",
+        "Gems": [
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": true,
+            "Grade": "전설"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": false,
+            "Grade": "희귀"
+          }
+        ]
+      },
+      {
+        "Index": 1,
+        "Name": "질서의 달 코어 : 빛의 파동",
+        "Point": 18,
+        "Grade": "유물",
+        "Gems": [
+          {
+            "IsActive": true,
+            "Grade": "전설"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Name": "질서의 별 코어 : 수호의 서약",
+        "Point": 20,
+        "Grade": "고대",
+        "Gems": [
+          {
+            "IsActive": true,
+            "Grade": "유물"
+          },
+          {
+            "IsActive": true,
+            "Grade": "전설"
+          },
+          {
+            "IsActive": true,
+            "Grade": "전설"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          }
+        ]
+      },
+      {
+        "Index": 3,
+        "Name": "혼돈의 해 코어 : 찬란한 공격",
+        "Point": 18,
+        "Grade": "유물",
+        "Gems": [
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": false,
+            "Grade": "희귀"
+          }
+        ]
+      },
+      {
+        "Index": 4,
+        "Name": "혼돈의 달 코어 : 불꽃 일격",
+        "Point": 17,
+        "Grade": "전설",
+        "Gems": [
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": true,
+            "Grade": "희귀"
+          },
+          {
+            "IsActive": false,
+            "Grade": "고급"
+          }
+        ]
+      },
+      {
+        "Index": 5,
+        "Name": "혼돈의 별 코어 : 공격",
+        "Point": 19,
+        "Grade": "유물",
+        "Gems": [
+          {
+            "IsActive": true,
+            "Grade": "전설"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          },
+          {
+            "IsActive": true,
+            "Grade": "영웅"
+          }
+        ]
+      }
+    ],
+    "Effects": [
+      {
+        "Name": "공격력",
+        "Level": 26
+      },
+      {
+        "Name": "추가 피해",
+        "Level": 65
+      },
+      {
+        "Name": "보스 피해",
+        "Level": 11
+      },
+      {
+        "Name": "낙인력",
+        "Level": 17
+      },
+      {
+        "Name": "아군 공격 강화",
+        "Level": 1
+      },
+      {
+        "Name": "아군 피해 강화",
+        "Level": 11
+      }
+    ]
+  }
+}

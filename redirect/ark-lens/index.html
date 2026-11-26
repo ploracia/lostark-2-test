@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="refresh"
+      content="5; url=https://mokokoloa.pages.dev/?from=ark-lens"
+    />
+    <title>모꼬꼬로아 주소 이전</title>
+    <script type="module">
+      import { redirectUrl } from "/redirect-url.js";
+      const destination = redirectUrl(window.location);
+      document.getElementById("destination").href = destination;
+      window.location.replace(destination);
+    </script>
+  </head>
+  <body>
+    <h1>모꼬꼬로아의 주소가 바뀌었어요</h1>
+    <p>
+      <a id="destination" href="https://mokokoloa.pages.dev/?from=ark-lens"
+        >모꼬꼬로아로 이동</a
+      >
+    </p>
+  </body>
+</html>

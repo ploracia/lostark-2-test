@@ -1,0 +1,156 @@
+﻿{
+    "_source":  {
+                    "url":  "https://developer-lostark.game.onstove.com/swagger-doc/endpoints/armories",
+                    "fetchedAt":  "2026-11-25",
+                    "swaggerVersion":  "2.0",
+                    "info":  {
+                                 "version":  "v1",
+                                 "title":  "Lostark Open API"
+                             }
+                },
+    "endpoint":  {
+                     "get":  {
+                                 "tags":  [
+                                              "Armories"
+                                          ],
+                                 "summary":  "Returns a summary of the ark passive by a character name.",
+                                 "operationId":  "Armories_GetArkPassive",
+                                 "consumes":  [
+
+                                              ],
+                                 "produces":  [
+                                                  "application/json"
+                                              ],
+                                 "parameters":  [
+                                                    {
+                                                        "name":  "characterName",
+                                                        "in":  "path",
+                                                        "description":  "The name of the character",
+                                                        "required":  true,
+                                                        "type":  "string"
+                                                    }
+                                                ],
+                                 "responses":  {
+                                                   "200":  {
+                                                               "description":  "OK",
+                                                               "schema":  {
+                                                                              "$ref":  "#/definitions/ArkPassive"
+                                                                          }
+                                                           },
+                                                   "400":  {
+                                                               "description":  "Bad Request"
+                                                           },
+                                                   "401":  {
+                                                               "description":  "Unauthorized"
+                                                           },
+                                                   "403":  {
+                                                               "description":  "Forbidden"
+                                                           },
+                                                   "404":  {
+                                                               "description":  "Not Found"
+                                                           },
+                                                   "415":  {
+                                                               "description":  "Unsupported Media Type"
+                                                           },
+                                                   "429":  {
+                                                               "description":  "Rate Limit Exceeded"
+                                                           },
+                                                   "500":  {
+                                                               "description":  "Internal Server Error"
+                                                           },
+                                                   "502":  {
+                                                               "description":  "Bad Gateway"
+                                                           },
+                                                   "503":  {
+                                                               "description":  "Service Unavailable"
+                                                           },
+                                                   "504":  {
+                                                               "description":  "Gateway Timeout"
+                                                           }
+                                               }
+                             }
+                 },
+    "definitions":  {
+                        "ArkPassive":  {
+                                           "type":  "object",
+                                           "properties":  {
+                                                              "Title":  {
+                                                                            "type":  "string"
+                                                                        },
+                                                              "IsArkPassive":  {
+                                                                                   "type":  "boolean"
+                                                                               },
+                                                              "Points":  {
+                                                                             "type":  "array",
+                                                                             "items":  {
+                                                                                           "$ref":  "#/definitions/ArkPassivePoint"
+                                                                                       }
+                                                                         },
+                                                              "Effects":  {
+                                                                              "type":  "array",
+                                                                              "items":  {
+                                                                                            "$ref":  "#/definitions/ArkPassiveEffectSkill"
+                                                                                        }
+                                                                          }
+                                                          }
+                                       },
+                        "ArkPassivePoint":  {
+                                                "type":  "object",
+                                                "properties":  {
+                                                                   "Name":  {
+                                                                                "type":  "string"
+                                                                            },
+                                                                   "Value":  {
+                                                                                 "format":  "int32",
+                                                                                 "type":  "integer"
+                                                                             },
+                                                                   "Tooltip":  {
+                                                                                   "type":  "string"
+                                                                               },
+                                                                   "Description":  {
+                                                                                       "type":  "string"
+                                                                                   }
+                                                               }
+                                            },
+                        "ArkPassiveEffectSkill":  {
+                                                      "type":  "object",
+                                                      "properties":  {
+                                                                         "Name":  {
+                                                                                      "type":  "string"
+                                                                                  },
+                                                                         "Description":  {
+                                                                                             "type":  "string"
+                                                                                         },
+                                                                         "Icon":  {
+                                                                                      "type":  "string"
+                                                                                  },
+                                                                         "ToolTip":  {
+                                                                                         "type":  "string"
+                                                                                     }
+                                                                     }
+                                                  },
+                        "ArkPassiveEffect":  {
+                                                 "type":  "object",
+                                                 "properties":  {
+                                                                    "AbilityStoneLevel":  {
+                                                                                              "format":  "int32",
+                                                                                              "default":  "null",
+                                                                                              "type":  "integer"
+                                                                                          },
+                                                                    "Grade":  {
+                                                                                  "type":  "string"
+                                                                              },
+                                                                    "Level":  {
+                                                                                  "format":  "int32",
+                                                                                  "type":  "integer"
+                                                                              },
+                                                                    "Name":  {
+                                                                                 "type":  "string"
+                                                                             },
+                                                                    "Description":  {
+                                                                                        "type":  "string"
+                                                                                    }
+                                                                }
+                                             }
+                    }
+}

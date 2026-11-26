@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`character views with MSW > shows HTTP 0 state 1`] = `
+{
+  "actions": [
+    "다시 시도",
+  ],
+  "countdown": false,
+  "title": "서버에 연결할 수 없습니다",
+}
+`;
+
+exports[`character views with MSW > shows HTTP 401 state 1`] = `
+{
+  "actions": [
+    "키 다시 입력",
+    "다시 시도",
+  ],
+  "countdown": false,
+  "title": "API 키가 거부되었습니다",
+}
+`;
+
+exports[`character views with MSW > shows HTTP 404 state 1`] = `
+{
+  "actions": [],
+  "countdown": false,
+  "title": "‘은하수바리케이드’ 캐릭터를 찾을 수 없습니다",
+}
+`;
+
+exports[`character views with MSW > shows HTTP 429 state 1`] = `
+{
+  "actions": [
+    "지금 재시도",
+    "취소",
+  ],
+  "countdown": true,
+  "title": "호출 한도에 도달했습니다",
+}
+`;
+
+exports[`character views with MSW > shows HTTP 503 state 1`] = `
+{
+  "actions": [
+    "상태 확인",
+    "공식 공지 ↗",
+  ],
+  "countdown": false,
+  "title": "서버 점검 중",
+}
+`;
