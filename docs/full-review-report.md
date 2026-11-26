@@ -16,7 +16,7 @@
 | `npm run lint` | 통과 · 경고 0 | 통과 · 경고 0 |
 | `npm test` | 10개 파일, 152개 테스트 통과 · stderr 경고 없음 | 10개 파일, 156개 테스트 통과 |
 | `npm run build` | 통과 · JS 302.32 kB (gzip 98.61 kB), CSS 23.72 kB | 같음 |
-| `prettier --check --end-of-line auto src tests` | `src/models.ts`, `tests/fixtures-artbiit-v9-arkgrid.json` 미정렬 | `models.ts` 정렬함. 픽스처 JSON은 원문 보존을 위해 그대로 둠 |
+| `prettier --check --end-of-line auto src tests` | `src/models.ts`, 당시 테스트 픽스처 JSON 미정렬 | `models.ts` 정렬함. 픽스처는 §6에서 가상 데이터로 바꿈 |
 
 `npm ci` 경고는 deprecated 알림 3건(`whatwg-encoding`, `node-domexception`은 jsdom/msw 하위 의존성, `eslint@9.39.5` 지원 종료)뿐입니다. 빌드 결과 `dist/_headers`에는 `index.html` 메타 CSP와 같은 정책이 들어갑니다.
 
@@ -30,11 +30,11 @@
 | 2 | 중간 | `docs/deploy-cloudflare.md` 3단계 | Wrangler 4.168은 AI 에이전트 실행을 감지하면 새 Pages 프로젝트 생성·배포를 Workers로 넘깁니다(`wrangler-dist/cli.js`의 `delegate-to-workers`). 그때는 `--force`가 필요한데 문서에 없었습니다. | **고침.** 언제 `--force`가 필요한지와 명령을 추가. 사람이 터미널에서 실행할 때는 필요 없고, 프로젝트가 생긴 뒤에도 필요 없음을 적음 |
 | 3 | 중간 | `README.md` | "선택 범위인 프록시는 v1에서 제외했습니다"라고 했지만 `proxy/worker.ts`와 프록시 재시도 UI가 들어 있습니다. | **고침.** `VITE_PROXY_URL`로 빌드했을 때만 나타나고 동의해야 켜진다고 바꿈 |
 | 4 | 중간 | `src/api.ts` `lostark()` | 전송 함수가 `TypeError`가 아닌 오류(예: `SecurityError`, 일반 `Error`, 문자열)로 실패하면 그대로 다시 던졌습니다. 그러면 `ErrorState`·`SiblingsDrawer`의 `errorContent[error.kind]`가 `undefined`가 되어 렌더링 중 예외가 납니다. | **고침.** Abort만 그대로 전달하고 나머지는 `{ kind: "network" }`로 바꿈. 테스트 4개 추가(`tests/app.test.tsx`) |
-| 5 | 중간 | `docs/implementation-report.md`, `docs/ui-design.md`, `docs/transfer-tab-design.md`, `research/api/characters-armories-guide.md`, `research/transfer/transfer-analysis.md` | 로컬 절대 경로(`C:\Users\<사용자>\...`, `.orca\bots\...`)가 들어 있어 PC 사용자 이름과 작업 환경 구조가 드러납니다. | **고침.** 저장소 상대 경로 링크로 바꿈. **과거 커밋에는 남아 있음** (§4 오너 결정) |
+| 5 | 중간 | `docs/implementation-report.md`, `docs/ui-design.md`, `docs/transfer-tab-design.md`, `research/api/characters-armories-guide.md`, `research/transfer/transfer-analysis.md` | 로컬 절대 경로(`C:\Users\<사용자>\...`, `.orca\bots\...`)가 들어 있어 PC 사용자 이름과 작업 환경 구조가 드러납니다. | **고침.** 저장소 상대 경로 링크로 바꿈. 과거 커밋도 2026-11-26 이력 재작성으로 정리함 (§6) |
 | 6 | 낮음 | `src/data/engraving-icons.ts:1` | 출처 주석이 다른 작업 공간 경로(`argonaut/research/...`)를 가리켰습니다. | **고침.** `research/engraving-icons/engraving-icons.json` |
 | 7 | 낮음 | `src/models.ts` | Prettier 형식이 맞지 않았습니다. | **고침** |
-| 8 | 정보 | 커밋 이력 전체 | 작성자 이메일 2개가 커밋 메타데이터에 공개되어 있습니다(브랜치 커밋 작성자와 `main`의 Initial commit 작성자). | 그대로 둠. 이력을 다시 쓰려면 force push가 필요해서 이번 범위에서는 하지 않았음 (§4) |
-| 9 | 낮음 | `docs/mockup-transfer` 이전 목업 이력 (`git log -p`) | 키 입력란 예시 값으로 JWT 헤더 앞부분(잘린 값)이 있습니다. 디코드하면 `{"alg":"RS256","typ":"JWT","x5t":"KX2…`이고 서명이나 페이로드가 없어서 키로 쓸 수 없습니다. | 그대로 둠. 위험 없음 |
+| 8 | 정보 | 커밋 이력 전체 | 작성자 이메일 2개가 커밋 메타데이터에 공개되어 있습니다(브랜치 커밋 작성자와 `main`의 Initial commit 작성자). | **고침 (2026-11-26).** 이 브랜치 커밋의 작성자·커미터를 GitHub `noreply` 주소로 통일함. `main`의 Initial commit은 오너 지시대로 바꾸지 않음 (§6) |
+| 9 | 낮음 | `docs/mockup-transfer` 이전 목업 이력 (`git log -p`) | 키 입력란 예시 값으로 JWT 헤더 앞부분(잘린 값)이 있습니다. 디코드하면 `{"alg":"RS256","typ":"JWT","x5t":"KX2…`이고 서명이나 페이로드가 없어서 키로 쓸 수 없습니다. | 위험은 없었지만 2026-11-26 이력 재작성 때 `demo.fixture.sample`로 바꿈 (§6) |
 | 10 | 낮음 | `proxy/worker.ts` | `Origin` 검사는 브라우저만 막고 `curl`처럼 헤더를 꾸며 보내는 요청은 막지 못합니다. 키를 가진 사람은 누구나 Worker를 중계 서버로 쓸 수 있어 무료 한도(일 10만 요청)를 쓸 수 있습니다. 경로 화이트리스트, GET만 허용, `%2f`/`%5c` 차단, JSON 외 본문 폐기, 리다이렉트 차단, 캐시·로그 끄기는 모두 제대로 되어 있습니다. | 제안만. 필요하면 Cloudflare Rate Limiting 규칙이나 WAF로 보완 |
 | 11 | 낮음 | `_headers` / `vite.config.ts` | CSP에 `frame-ancestors`가 없습니다(메타 CSP는 이 지시어를 무시함). `X-Frame-Options: DENY`가 같은 역할을 해서 실제 위험은 없습니다. `style-src 'unsafe-inline'`은 React 인라인 스타일 때문에 남아 있습니다. | 제안만. 헤더용 CSP에만 `frame-ancestors 'none'`을 덧붙이는 방법이 있음 |
 | 12 | 낮음 | `src/Character.tsx`, `src/session.tsx`, `src/TransferTab.tsx`, `src/models.ts`, `src/parse/tooltip.ts` | 정의한 파일 안에서만 쓰는 export(`errorContent`, `ErrorState`, `NOT_FOUND_TTL`, `SIBLINGS_TTL`, `EstValue`, `EvidenceBadge`, `Avatar`, `ParsedTooltip`)가 있습니다. 동작에는 영향이 없습니다. | 그대로 둠 |
@@ -87,3 +87,17 @@
 - `README.md`, `docs/deploy-cloudflare.md`: 프록시 설명, PowerShell에서도 되는 배포 명령, `--force` 조건
 - `docs/*.md`, `research/api/characters-armories-guide.md`, `research/transfer/transfer-analysis.md`, `src/data/engraving-icons.ts`: 로컬 절대 경로와 잘못된 출처 경로를 저장소 상대 경로로
 - `src/models.ts`: Prettier 정렬
+
+## 6. 공개 저장소 정리 (2026-11-26, 오너 승인: §4 추천안)
+
+§3의 R1~R6과 §4의 1~5번을 처리했습니다. 작업 트리만 고친 것이 아니라 `origin/main` 이후의 모든 커밋을 다시 써서 지운 자료가 과거 커밋에도 남지 않게 했습니다(`git filter-branch`, 각 커밋에 같은 정리 스크립트를 적용).
+
+| 항목 | 처리 |
+| --- | --- |
+| R1·R2 공개 파서 발췌 | `community-parsers-reference.md`를 지우고 [`community-parsers-links.md`](../research/arkgrid/samples/community-parsers-links.md)로 대체. 커밋 고정 링크, 라이선스, 한두 줄 요약만 남김 |
+| R3 pyLoa 발췌 | `pyloa-arkgrid-model-and-test.py`를 지우고 [`pyloa-arkgrid-notes.md`](../research/arkgrid/samples/pyloa-arkgrid-notes.md)로 대체(링크, MIT 저작권 표시, 요약) |
+| R4 실제 캐릭터 응답 | artbiit 원문 샘플 3개와 테스트 픽스처를 지우고 가상 데이터로 대체: `research/arkgrid/samples/synthetic-arkgrid.json`, `synthetic-slot0-tooltip-decoded.json`, `research/arkpassive/samples/synthetic-arkpassive.json`, `tests/fixtures-arkgrid-synthetic.json`. `tests/arkgrid.test.tsx`의 기대값도 바꿈(스냅샷 영향 없음). 조사 문서에서는 실제 캐릭터명·원정대 캐릭터명·길드명·영지명·서버명을 가상 값으로 바꾸고, 짧은 인용에는 artbiit 저장소와 ISC 라이선스 링크를 붙임 |
+| R5·R6 인벤 기반 아크 패시브 JSON | `evolution.json`, `enlightenment.json`, `leap.json`, `icon-verification.json`을 저장소에서 빼고 `.gitignore`에 추가(로컬 보관). `arkpassive-tree.md`에 "데이터는 저장소에 포함하지 않음"을 적음 |
+| 로컬 절대 경로 | 과거 문서 버전의 경로를 §2 5번과 같은 상대 경로로 바꿈 |
+| 커밋 작성자 | `origin/main` 이후 커밋의 작성자·커미터를 `ploracia <344814254+ploracia@users.noreply.github.com>`로 통일 |
+| JWT 모양 문자열 | 목업 입력란 예시 값과 문서의 JWT 헤더 모양 예시를 자리표시 문자열로 바꿈 |
